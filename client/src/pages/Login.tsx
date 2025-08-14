@@ -16,7 +16,7 @@ const Login = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    //git lens check 2
+    //
     try {
       const { data } = await api.post('http://localhost:5000/api/auth/login', form);
       console.log('Login response data:', data);
