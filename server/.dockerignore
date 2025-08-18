@@ -1,0 +1,43 @@
+# -------------------------------
+# Dependencies & build artifacts
+# -------------------------------
+node_modules
+dist
+build
+.pnpm-store
+
+# -------------------------------
+# Local environment & secrets
+# -------------------------------
+.env
+.env.*       # e.g. .env.local, .env.dev
+
+# -------------------------------
+# Logs & runtime files
+# -------------------------------
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# -------------------------------
+# Source control
+# -------------------------------
+.git
+.gitignore
+
+# -------------------------------
+# Editor & OS cruft
+# -------------------------------
+.vscode
+.idea
+.DS_Store
+Thumbs.db
+
+# -------------------------------
+# Tests & coverage (exclude if not needed in build)
+# -------------------------------
+coverage
+*.spec.ts
+*.test.ts
