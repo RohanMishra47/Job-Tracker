@@ -1,0 +1,22 @@
+# Dependency directories
+node_modules
+.pnpm-store
+
+# Build output
+dist
+
+# Environment files
+.env
+.env.*
+
+# Logs
+*.log
+
+# Version control
+.git
+.gitignore
+
+# OS/editor junk
+.DS_Store
+Thumbs.db
+*.swp
