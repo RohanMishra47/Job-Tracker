@@ -1,8 +1,6 @@
-# version: "3.9"
-
 services:
   jobtracker-backend:
-    image: jobtracker-backend
+    build: ./server
     environment:
       - MONGO_URI=mongodb://jobtracker-mongo:27017/jobtracker
       - JWT_SECRET=96db5f1d172c54636f2170aaba51beb6
@@ -10,31 +8,18 @@ services:
       - jobtracker-net
     ports:
       - 5000:5000
-    # volumes:
-    #   - ./server/src:/app/src
-    #   - ./server/package.json:/app/package.json
-    #   - ./server/pnpm-lock.yaml:/app/pnpm-lock.yaml
+    volumes:
+      - ./server:/app
+      - /app/node_modules
     depends_on:
       - jobtracker-mongo
-
-  jobtracker-mongo:
-    image: mongo:6
-    networks:
-      - jobtracker-net
-    ports:
-      - 27017:27017
-    volumes:
-      - mongo_data:/data/db
+    command: pnpm dev
 
   jobtracker-frontend:
-    image: jobtracker-frontend
+    build: ./client
     ports:
       - 5173:5173
-
-networks:
-  jobtracker-net:
-    external: true
-
-volumes:
-  mongo_data:
-    external: true
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+    command: pnpm run dev
