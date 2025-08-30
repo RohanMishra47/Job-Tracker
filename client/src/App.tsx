@@ -1,7 +1,10 @@
 import { useEffect } from 'react';
 import { BrowserRouter, Route, Routes, useNavigate } from 'react-router-dom';
-import Dashboard from './components/Dashboard';
+import Dashboard from './app_components/Dashboard';
+import { AppSidebar } from './components/app-sidebar';
+import { SidebarProvider, SidebarTrigger } from './components/ui/sidebar';
 import { setAccessToken } from './instances/axiosInstance';
+import CreateJob from './pages/createJob';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import { isLoggedIn } from './utils/auth';
@@ -26,15 +29,20 @@ const RedirectToLoginOrDashboard = () => {
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<RedirectToLoginOrDashboard />} />{' '}
-        {/* default to login or dashboard */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-      </Routes>
-    </BrowserRouter>
+    <SidebarProvider>
+      <AppSidebar />
+      <SidebarTrigger />
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<RedirectToLoginOrDashboard />} />{' '}
+          {/* default to login or dashboard */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/createJob" element={<CreateJob />} />
+        </Routes>
+      </BrowserRouter>
+    </SidebarProvider>
   );
 }
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import JobBoard from '../components/JobBoard';
+import JobBoard from '../app_components/JobBoard';
 
 const Dashboard: React.FC = () => {
   return (
