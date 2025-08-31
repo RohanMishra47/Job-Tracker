@@ -1,67 +1,62 @@
-import { Calendar, Home, Plus, Search, Settings } from 'lucide-react';
+import { Edit, Menu, PlusSquare, Trash2 } from 'lucide-react';
 
 import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-} from './ui/sidebar';
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Button } from './ui/button';
+import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader } from './ui/sidebar';
 
-// Menu items.
 const items = [
-  {
-    title: 'Home',
-    url: '#',
-    icon: Home,
-  },
   {
     title: 'Create Job',
     url: '/createJob',
-    icon: Plus,
+    icon: PlusSquare,
   },
   {
-    title: 'Calendar',
+    title: 'Update Job',
     url: '#',
-    icon: Calendar,
+    icon: Edit,
   },
   {
-    title: 'Search',
+    title: 'Delete Job',
     url: '#',
-    icon: Search,
-  },
-  {
-    title: 'Settings',
-    url: '#',
-    icon: Settings,
+    icon: Trash2,
   },
 ];
 
 export function AppSidebar() {
   return (
     <Sidebar>
+      <SidebarHeader>
+        <h2 className="text-lg font-bold">Job Tracker</h2>
+      </SidebarHeader>
+
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Job Actions</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {items.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <a href={item.url}>
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </a>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="w-full justify-start">
+              Job Actions <Menu />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-40">
+            {items.map((item) => (
+              <DropdownMenuItem key={item.title}>
+                <a href={item.url}>
+                  <item.icon />
+                  <span>{item.title}</span>
+                </a>
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </SidebarContent>
+
+      <SidebarFooter>
+        <p className="text-xs text-muted-foreground">© 2025</p>
+      </SidebarFooter>
     </Sidebar>
   );
 }
