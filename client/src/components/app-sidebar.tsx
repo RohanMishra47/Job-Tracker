@@ -1,55 +1,41 @@
-import { Edit, Menu, PlusSquare, Trash2 } from 'lucide-react';
-
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Button } from './ui/button';
-import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader } from './ui/sidebar';
-
-const items = [
-  {
-    title: 'Create Job',
-    url: '/createJob',
-    icon: PlusSquare,
-  },
-  {
-    title: 'Update Job',
-    url: '#',
-    icon: Edit,
-  },
-  {
-    title: 'Delete Job',
-    url: '#',
-    icon: Trash2,
-  },
-];
+import { ChevronDown } from 'lucide-react';
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarHeader,
+  SidebarMenuButton,
+} from './ui/sidebar';
 
 export function AppSidebar() {
   return (
     <Sidebar>
       <SidebarHeader>
-        <h2 className="text-lg font-bold">Job Tracker</h2>
+        <h2 className="text-lg font-bold">My App</h2>
       </SidebarHeader>
 
       <SidebarContent>
+        {/* Example: Dropdown inside sidebar */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="w-full justify-start">
-              Job Actions <Menu />
-            </Button>
+            <SidebarMenuButton>
+              <span>Select Workspace</span>
+              <ChevronDown className="ml-auto" />
+            </SidebarMenuButton>
           </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-40">
-            {items.map((item) => (
-              <DropdownMenuItem key={item.title}>
-                <a href={item.url}>
-                  <item.icon />
-                  <span>{item.title}</span>
-                </a>
-              </DropdownMenuItem>
-            ))}
+          <DropdownMenuContent
+            align="start"
+            className="min-w-[--radix-dropdown-menu-trigger-width]"
+          >
+            <DropdownMenuItem className="w-full">Profile</DropdownMenuItem>
+            <DropdownMenuItem className="w-full">Preferences</DropdownMenuItem>
+            <DropdownMenuItem className="w-full">Logout</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarContent>
