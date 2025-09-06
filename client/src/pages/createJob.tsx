@@ -1,8 +1,17 @@
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { api } from '@/instances/axiosInstance';
 import axios from 'axios';
+import { ChevronDown } from 'lucide-react';
 import React, { useState } from 'react';
 
 const CreateJob = () => {
+  const initialFormData = { company: '', position: '', status: '', jobType: '', location: '' };
   const [formData, setFormData] = useState({
     company: '',
     position: '',
@@ -62,30 +71,48 @@ const CreateJob = () => {
           required
           className="w-full rounded border px-4 py-2"
         />
-        <select
-          name="status"
-          value={formData.status}
-          onChange={handleChange}
-          className="w-full rounded border px-4 py-2"
-        >
-          <option value="rejected">Rejected</option>
-          <option value="offer">Offer</option>
-          <option value="interviewing">Interviewing</option>
-          <option value="declined">Declined</option>
-          <option value="applied">Applied</option>
-          <option value="pending">Pending</option>
-        </select>
-        <select
-          name="jobType"
-          value={formData.jobType}
-          onChange={handleChange}
-          className="w-full rounded border px-4 py-2"
-        >
-          <option value="internship">Internship</option>
-          <option value="remote">Remote</option>
-          <option value="part-time">Part-Time</option>
-          <option value="full-time">Full-Time</option>
-        </select>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" className="w-full justify-between">
+              Select Status <ChevronDown />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            {['applied', 'interviewing', 'offer', 'rejected', 'declined', 'pending'].map(
+              (status) => (
+                <DropdownMenuItem
+                  key={status}
+                  onSelect={() => {
+                    // Manually update formData via your handleChange
+                    setFormData((prev) => ({ ...prev, status }));
+                  }}
+                >
+                  {status.charAt(0).toUpperCase() + status.slice(1)}
+                </DropdownMenuItem>
+              )
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" className="w-full justify-between">
+              Select Job Type <ChevronDown />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            {['full-time', 'part-time', 'remote', 'internship'].map((jobType) => (
+              <DropdownMenuItem
+                key={status}
+                onSelect={() => {
+                  // Manually update formData via your handleChange
+                  setFormData((prev) => ({ ...prev, jobType }));
+                }}
+              >
+                {jobType.charAt(0).toUpperCase() + jobType.slice(1)}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
         <input
           name="location"
           value={formData.location}
@@ -104,7 +131,8 @@ const CreateJob = () => {
           Create
         </button>
         <button
-          type="reset"
+          type="button"
+          onClick={() => setFormData(initialFormData)}
           className="w-full rounded bg-blue-600 py-2 text-white hover:bg-blue-700"
         >
           Cancel

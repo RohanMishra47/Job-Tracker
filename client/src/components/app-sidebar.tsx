@@ -1,48 +1,38 @@
+import { ChevronDown } from 'lucide-react';
+
+import { Button } from './ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { ChevronDown } from 'lucide-react';
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarHeader,
-  SidebarMenuButton,
-} from './ui/sidebar';
+} from './ui/dropdown-menu';
+import { Sidebar, SidebarHeader, SidebarMenu, SidebarMenuItem } from './ui/sidebar';
 
 export function AppSidebar() {
   return (
     <Sidebar>
       <SidebarHeader>
-        <h2 className="text-lg font-bold">My App</h2>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="w-full justify-between">
+                  Job Actions <ChevronDown />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-[--radix-popper-anchor-width]">
+                <DropdownMenuItem className="p-2">
+                  <a href="/createJob">Create Job</a>
+                </DropdownMenuItem>
+                <DropdownMenuItem className="p-2">
+                  <a href="/editJob">Edit Job</a>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarHeader>
-
-      <SidebarContent>
-        {/* Example: Dropdown inside sidebar */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <SidebarMenuButton>
-              <span>Select Workspace</span>
-              <ChevronDown className="ml-auto" />
-            </SidebarMenuButton>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            align="start"
-            className="min-w-[--radix-dropdown-menu-trigger-width]"
-          >
-            <DropdownMenuItem className="w-full">Profile</DropdownMenuItem>
-            <DropdownMenuItem className="w-full">Preferences</DropdownMenuItem>
-            <DropdownMenuItem className="w-full">Logout</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </SidebarContent>
-
-      <SidebarFooter>
-        <p className="text-xs text-muted-foreground">© 2025</p>
-      </SidebarFooter>
     </Sidebar>
   );
 }
