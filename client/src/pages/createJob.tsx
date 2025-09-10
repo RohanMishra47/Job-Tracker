@@ -8,9 +8,10 @@ import {
 import { api } from '@/instances/axiosInstance';
 import { jobSchema } from '@/schemas/jobSchema';
 import { cn } from '@/utils/cn';
+import { createDebouncedValidate } from '@/utils/validation';
 import axios from 'axios';
 import { ChevronDown } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { ZodError } from 'zod';
 import type { $ZodIssue } from 'zod/v4/core';
 
@@ -38,6 +39,11 @@ const CreateJob = () => {
   const [errorMessages, setErrorMessages] = useState<$ZodIssue[]>([]);
   const [isValid, setIsValid] = useState(false);
 
+  const debouncedValidate = useMemo(
+    () => createDebouncedValidate(setIsValid, setErrorMessages),
+    []
+  );
+
   useEffect(() => {
     const fetchJobs = async () => {
       try {
@@ -53,29 +59,20 @@ const CreateJob = () => {
     fetchJobs();
   }, []);
 
-  const isFormValid = (formData: typeof initialFormData) => {
-    try {
-      jobSchema.parse(formData);
-      return true;
-    } catch (err) {
-      console.error('Validation error:', err);
-      return false;
-    }
-  };
+  // const isFormValid = (formData: typeof initialFormData) => {
+  //   try {
+  //     jobSchema.parse(formData);
+  //     return true;
+  //   } catch (err) {
+  //     console.error('Validation error:', err);
+  //     return false;
+  //   }
+  // };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const updatedForm = { ...formData, [e.target.name]: e.target.value };
     setFormData(updatedForm);
-    setIsValid(isFormValid(updatedForm));
-
-    try {
-      jobSchema.parse(updatedForm);
-      setErrorMessages([]);
-    } catch (err) {
-      if (err instanceof ZodError) {
-        setErrorMessages(err.issues);
-      }
-    }
+    debouncedValidate(updatedForm);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -187,16 +184,7 @@ const CreateJob = () => {
                   onSelect={() => {
                     const updated = { ...formData, status };
                     setFormData(updated);
-                    setIsValid(isFormValid(updated));
-
-                    try {
-                      jobSchema.parse(updated);
-                      setErrorMessages([]);
-                    } catch (err) {
-                      if (err instanceof ZodError) {
-                        setErrorMessages(err.issues);
-                      }
-                    }
+                    debouncedValidate(updated);
                   }}
                   className="px-3 py-2 cursor-pointer focus:bg-indigo-50 focus:text-indigo-700 transition-colors duration-150"
                 >
@@ -238,16 +226,7 @@ const CreateJob = () => {
                 onSelect={() => {
                   const updated = { ...formData, jobType };
                   setFormData(updated);
-                  setIsValid(isFormValid(updated));
-
-                  try {
-                    jobSchema.parse(updated);
-                    setErrorMessages([]);
-                  } catch (err) {
-                    if (err instanceof ZodError) {
-                      setErrorMessages(err.issues);
-                    }
-                  }
+                  debouncedValidate(updated);
                 }}
                 className="px-3 py-2 cursor-pointer focus:bg-indigo-50 focus:text-indigo-700 transition-colors duration-150"
               >
