@@ -81,8 +81,10 @@ const CreateJob = () => {
     setErrorMessages([]);
     setIsSubmitting(true);
 
+    const startTime = Date.now();
+
     try {
-      const validatedData = jobSchema.parse(formData);
+      jobSchema.parse(formData);
 
       const isDuplicateCompany = jobs.some(
         (job) => job.company.trim().toLowerCase() === formData.company.trim().toLowerCase()
@@ -93,7 +95,7 @@ const CreateJob = () => {
         return;
       }
 
-      const { data } = await api.post('/jobs', validatedData);
+      const { data } = await api.post('/jobs', formData);
       console.log('response data:', data);
       setFormData(initialFormData);
 
@@ -109,6 +111,15 @@ const CreateJob = () => {
         setError('An unknown error occured');
       }
       setIsSubmitting(false);
+    } finally {
+      const elapsed = Date.now() - startTime;
+      const remaining = 1000 - elapsed;
+
+      if (remaining > 0) {
+        setTimeout(() => setIsSubmitting(false), remaining);
+      } else {
+        setIsSubmitting(false);
+      }
     }
   };
   return (
@@ -275,7 +286,33 @@ const CreateJob = () => {
             isValid ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-gray-300 cursor-not-allowed'
           )}
         >
-          Create
+          {isSubmitting ? (
+            <span className="flex items-center gap-2">
+              <svg
+                className="animate-spin h-5 w-5 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                />
+              </svg>
+              Creating...
+            </span>
+          ) : (
+            'Create'
+          )}
         </button>
         {!isValid && (
           <p className="text-center text-sm text-gray-500 mt-2">
