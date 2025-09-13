@@ -1,6 +1,7 @@
 import { DragDropContext, type DropResult } from '@hello-pangea/dnd';
 import { AxiosError } from 'axios';
-import React, { useEffect, useState } from 'react';
+import { debounce } from 'lodash';
+import React, { useEffect, useMemo, useState } from 'react';
 import toast from 'react-hot-toast';
 import { api } from '../instances/axiosInstance';
 import JobColumn from './JobColumn';
@@ -22,35 +23,78 @@ const allStatuses = ['applied', 'pending', 'interviewing', 'offer', 'rejected'];
 
 const JobBoard: React.FC = () => {
   const [jobs, setJobs] = useState<JobMap>({});
-  // At the top of your component
-  console.log('Using api instance:', typeof api); // Should log "function"
-  console.log('API base URL:', api.defaults.baseURL); // Should log "/api"
+  const [allJobs, setAllJobs] = useState<Job[]>([]);
+  const [searchQueryInput, setSearchQueryInput] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
+  const [selectedJobType, setSelectedJobType] = useState<string | null>(null);
+
+  const fetchJobs = async () => {
+    try {
+      console.log('Token read from storage:', localStorage.getItem('token'));
+
+      const response = await api.get('/jobs');
+
+      const jobList: Job[] = response.data ?? [];
+      setAllJobs(jobList);
+
+      const grouped: JobMap = allStatuses.reduce((acc, status) => {
+        acc[status] = [];
+        return acc;
+      }, {} as JobMap);
+
+      jobList.forEach((job) => {
+        grouped[job.status].push(job);
+      });
+
+      setJobs(grouped);
+    } catch (error) {
+      console.error('Error fetching jobs:', error);
+    }
+  };
+
   useEffect(() => {
-    const fetchJobs = async () => {
-      try {
-        console.log('Token read from storage:', localStorage.getItem('token'));
-
-        const response = await api.get('/jobs');
-
-        const jobList: Job[] = response.data ?? [];
-
-        const grouped: JobMap = allStatuses.reduce((acc, status) => {
-          acc[status] = [];
-          return acc;
-        }, {} as JobMap);
-
-        jobList.forEach((job) => {
-          grouped[job.status].push(job);
-        });
-
-        setJobs(grouped);
-      } catch (error) {
-        console.error('Error fetching jobs:', error);
-      }
-    };
-
     fetchJobs();
   }, []);
+
+  const debouncedUpdate = useMemo(
+    () =>
+      debounce((value: string) => {
+        setSearchQuery(value);
+      }, 300),
+    []
+  );
+
+  useEffect(() => {
+    debouncedUpdate(searchQueryInput);
+
+    // cleanup to avoid memory leaks
+    return () => {
+      debouncedUpdate.cancel();
+    };
+  }, [searchQueryInput, debouncedUpdate]);
+
+  const filteredJobs = useMemo(() => {
+    return allJobs.filter((job) => {
+      const matchesSearch =
+        job.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        job.position.toLowerCase().includes(searchQuery.toLowerCase());
+
+      const matchesStatus = selectedStatus ? job.status === selectedStatus : true;
+      const matchesJobType = selectedJobType ? job.jobType === selectedJobType : true;
+
+      return matchesSearch && matchesStatus && matchesJobType;
+    });
+  }, [allJobs, searchQuery, selectedStatus, selectedJobType]);
+
+  const filteredJobsByStatus = useMemo(() => {
+    const grouped: Record<string, Job[]> = {};
+    filteredJobs.forEach((job) => {
+      if (!grouped[job.status]) grouped[job.status] = [];
+      grouped[job.status].push(job);
+    });
+    return grouped;
+  }, [filteredJobs]);
 
   const handleDragEnd = (result: DropResult) => {
     const { source, destination } = result;
@@ -101,17 +145,73 @@ const JobBoard: React.FC = () => {
   };
 
   return (
-    <DragDropContext onDragEnd={handleDragEnd}>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {allStatuses.map((status) => (
-          <JobColumn
-            key={status}
-            title={status}
-            jobs={jobs[status] ?? []} // fallback to empty array
-          />
-        ))}
-      </div>
-    </DragDropContext>
+    <div>
+      <input
+        type="text"
+        placeholder="Search by company or position"
+        value={searchQuery}
+        onChange={(e) => setSearchQueryInput(e.target.value)}
+        className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300"
+      />
+
+      <select
+        value={selectedStatus ?? ''}
+        onChange={(e) => setSelectedStatus(e.target.value || null)}
+        className="px-3 py-2 border rounded-md"
+      >
+        <option value="">All Statuses</option>
+        <option value="applied">Applied</option>
+        <option value="offer">Offer</option>
+        <option value="rejected">Rejected</option>
+        <option value="interviewing">Interview</option>
+        <option value="pending">Pending</option>
+        <option value="declined">Declined</option>
+      </select>
+
+      <select
+        value={selectedJobType ?? ''}
+        onChange={(e) => setSelectedJobType(e.target.value || null)}
+        className="px-3 py-2 border rounded-md"
+      >
+        <option value="">All Job Types</option>
+        <option value="internship"> Internship</option>
+        <option value="full-time">Full-time</option>
+        <option value="part-time">Part-time</option>
+        <option value="remote">Remote</option>
+      </select>
+
+      <button
+        onClick={() => {
+          setSearchQuery('');
+          setSelectedStatus(null);
+          setSelectedJobType(null);
+        }}
+        className="px-3 py-2 bg-gray-100 rounded hover:bg-gray-200"
+      >
+        Clear Filters
+      </button>
+
+      {selectedStatus && (
+        <span className="tag">
+          {selectedStatus}
+          <button onClick={() => setSelectedStatus(null)}>×</button>
+        </span>
+      )}
+
+      {Object.keys(filteredJobsByStatus).length === 0 && (
+        <div className="text-center text-gray-500 mt-4">
+          No jobs match your filters. Try adjusting your search or clearing filters.
+        </div>
+      )}
+
+      <DragDropContext onDragEnd={handleDragEnd}>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {Object.entries(filteredJobsByStatus).map(([status, jobs]) => (
+            <JobColumn key={status} title={status} jobs={jobs} />
+          ))}
+        </div>
+      </DragDropContext>
+    </div>
   );
 };
 
