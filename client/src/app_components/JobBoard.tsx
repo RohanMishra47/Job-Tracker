@@ -20,14 +20,15 @@ type JobMap = {
 };
 
 const allStatuses = ['applied', 'pending', 'interviewing', 'offer', 'rejected'];
+const allJobTypes = ['internship', 'full-time', 'part-time', 'remote'];
 
 const JobBoard: React.FC = () => {
   const [jobs, setJobs] = useState<JobMap>({});
   const [allJobs, setAllJobs] = useState<Job[]>([]);
   const [searchQueryInput, setSearchQueryInput] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
-  const [selectedJobType, setSelectedJobType] = useState<string | null>(null);
+  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
+  const [selectedJobTypes, setSelectedJobTypes] = useState<string[]>([]);
 
   const fetchJobs = async () => {
     try {
@@ -61,7 +62,7 @@ const JobBoard: React.FC = () => {
     () =>
       debounce((value: string) => {
         setSearchQuery(value);
-      }, 300),
+      }, 250),
     []
   );
 
@@ -80,12 +81,14 @@ const JobBoard: React.FC = () => {
         job.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
         job.position.toLowerCase().includes(searchQuery.toLowerCase());
 
-      const matchesStatus = selectedStatus ? job.status === selectedStatus : true;
-      const matchesJobType = selectedJobType ? job.jobType === selectedJobType : true;
+      const matchesStatus = selectedStatuses.length === 0 || selectedStatuses.includes(job.status);
+
+      const matchesJobType =
+        selectedJobTypes.length === 0 || selectedJobTypes.includes(job.jobType);
 
       return matchesSearch && matchesStatus && matchesJobType;
     });
-  }, [allJobs, searchQuery, selectedStatus, selectedJobType]);
+  }, [allJobs, searchQuery, selectedStatuses, selectedJobTypes]);
 
   const filteredJobsByStatus = useMemo(() => {
     const grouped: Record<string, Job[]> = {};
@@ -149,53 +152,95 @@ const JobBoard: React.FC = () => {
       <input
         type="text"
         placeholder="Search by company or position"
-        value={searchQuery}
+        value={searchQueryInput}
         onChange={(e) => setSearchQueryInput(e.target.value)}
         className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300"
       />
 
-      <select
-        value={selectedStatus ?? ''}
-        onChange={(e) => setSelectedStatus(e.target.value || null)}
-        className="px-3 py-2 border rounded-md"
-      >
-        <option value="">All Statuses</option>
-        <option value="applied">Applied</option>
-        <option value="offer">Offer</option>
-        <option value="rejected">Rejected</option>
-        <option value="interviewing">Interview</option>
-        <option value="pending">Pending</option>
-        <option value="declined">Declined</option>
-      </select>
+      {allStatuses.map((status) => (
+        <label key={status} className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            checked={selectedStatuses.includes(status)}
+            onChange={(e) => {
+              setSelectedStatuses((prev) =>
+                e.target.checked ? [...prev, status] : prev.filter((s) => s !== status)
+              );
+            }}
+          />
+          {status}
+        </label>
+      ))}
 
-      <select
-        value={selectedJobType ?? ''}
-        onChange={(e) => setSelectedJobType(e.target.value || null)}
-        className="px-3 py-2 border rounded-md"
-      >
-        <option value="">All Job Types</option>
-        <option value="internship"> Internship</option>
-        <option value="full-time">Full-time</option>
-        <option value="part-time">Part-time</option>
-        <option value="remote">Remote</option>
-      </select>
+      {allJobTypes.map((jobType) => (
+        <label key={jobType} className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            checked={selectedJobTypes.includes(jobType)}
+            onChange={(e) => {
+              setSelectedJobTypes((prev) =>
+                e.target.checked ? [...prev, jobType] : prev.filter((s) => s !== jobType)
+              );
+            }}
+          />
+          {jobType}
+        </label>
+      ))}
 
       <button
         onClick={() => {
+          setSelectedStatuses([]);
+          setSelectedJobTypes([]);
           setSearchQuery('');
-          setSelectedStatus(null);
-          setSelectedJobType(null);
         }}
-        className="px-3 py-2 bg-gray-100 rounded hover:bg-gray-200"
       >
-        Clear Filters
+        Clear All Filters
       </button>
 
-      {selectedStatus && (
-        <span className="tag">
-          {selectedStatus}
-          <button onClick={() => setSelectedStatus(null)}>×</button>
-        </span>
+      {searchQuery && (
+        <div className="flex items-center gap-2 mb-2">
+          <span className="font-semibold text-sm text-gray-500">Search:</span>
+          <span className="tag transition-opacity duration-300 ease-in-out opacity-100">
+            {searchQuery}
+            <button onClick={() => setSearchQuery('')}>×</button>
+          </span>
+        </div>
+      )}
+
+      {selectedStatuses.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2 mb-2">
+          <span className="font-semibold text-sm text-gray-500">Status:</span>
+          {selectedStatuses.map((status) => (
+            <span
+              key={status}
+              className="tag transition-opacity duration-300 ease-in-out opacity-100"
+            >
+              {status}
+              <button
+                onClick={() => setSelectedStatuses((prev) => prev.filter((s) => s !== status))}
+              >
+                ×
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+
+      {selectedJobTypes.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2 mb-2">
+          <span className="font-semibold text-sm text-gray-500">Job Type:</span>
+          {selectedJobTypes.map((type) => (
+            <span
+              key={type}
+              className="tag transition-opacity duration-300 ease-in-out opacity-100"
+            >
+              {type}
+              <button onClick={() => setSelectedJobTypes((prev) => prev.filter((t) => t !== type))}>
+                ×
+              </button>
+            </span>
+          ))}
+        </div>
       )}
 
       {Object.keys(filteredJobsByStatus).length === 0 && (

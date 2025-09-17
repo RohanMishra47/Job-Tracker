@@ -1,4 +1,5 @@
 import { Droppable } from '@hello-pangea/dnd';
+import { motion } from 'framer-motion';
 import React from 'react';
 import JobCard from './JobCard';
 
@@ -28,7 +29,15 @@ const JobColumn: React.FC<Props> = ({ title, jobs }) => {
           <h2 className="text-lg font-semibold text-center mb-2">{title}</h2>
           <div className="flex-1 space-y-2">
             {jobs.map((job, index) => (
-              <JobCard key={job._id} job={job} index={index} />
+              <motion.div
+                key={job._id}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.3 }}
+              >
+                <JobCard job={job} index={index} />
+              </motion.div>
             ))}
             {provided.placeholder}
           </div>
@@ -38,4 +47,4 @@ const JobColumn: React.FC<Props> = ({ title, jobs }) => {
   );
 };
 
-export default JobColumn;
+export default React.memo(JobColumn);

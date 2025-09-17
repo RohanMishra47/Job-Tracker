@@ -49,4 +49,4 @@ const JobCard: React.FC<Props> = ({ job, index }) => {
   );
 };
 
-export default JobCard;
+export default React.memo(JobCard);
