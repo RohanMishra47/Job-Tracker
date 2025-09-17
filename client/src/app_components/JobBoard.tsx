@@ -19,6 +19,13 @@ type JobMap = {
   [status: string]: Job[];
 };
 
+type FilterPreset = {
+  name: string;
+  searchQuery: string;
+  statuses: string[];
+  jobTypes: string[];
+};
+
 const allStatuses = ['applied', 'pending', 'interviewing', 'offer', 'rejected'];
 const allJobTypes = ['internship', 'full-time', 'part-time', 'remote'];
 
@@ -29,6 +36,14 @@ const JobBoard: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
   const [selectedJobTypes, setSelectedJobTypes] = useState<string[]>([]);
+  const [presets, setPresets] = useState<FilterPreset[]>(() => {
+    const saved = localStorage.getItem('jobFilterPresets');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  useEffect(() => {
+    localStorage.setItem('jobFilterPresets', JSON.stringify(presets));
+  }, [presets]);
 
   const fetchJobs = async () => {
     try {
@@ -242,6 +257,56 @@ const JobBoard: React.FC = () => {
           ))}
         </div>
       )}
+
+      <select
+        onChange={(e) => {
+          const selected = presets.find((p) => p.name === e.target.value);
+          if (selected) {
+            setSearchQuery(selected.searchQuery);
+            setSelectedStatuses(selected.statuses);
+            setSelectedJobTypes(selected.jobTypes);
+          }
+        }}
+      >
+        <option value="">Selet Preset</option>
+        {presets.map((p) => (
+          <option key={p.name} value={p.name}>
+            {p.name}
+          </option>
+        ))}
+      </select>
+
+      <ul className="space-y-2">
+        {presets.map((p) => (
+          <li key={p.name} className="flex items-center gap-2">
+            <span>{p.name}</span>
+            <button
+              className="text-red-500 hover:text-red-700"
+              onClick={() => setPresets((prev) => prev.filter((preset) => preset.name != p.name))}
+            >
+              x
+            </button>
+          </li>
+        ))}
+      </ul>
+
+      <button
+        onClick={() => {
+          const name = prompt('Name this preset');
+          if (!name) return;
+
+          const newPreset: FilterPreset = {
+            name,
+            searchQuery,
+            statuses: selectedStatuses,
+            jobTypes: selectedJobTypes,
+          };
+
+          setPresets((prev) => [...prev, newPreset]);
+        }}
+      >
+        Save Current Filters
+      </button>
 
       {Object.keys(filteredJobsByStatus).length === 0 && (
         <div className="text-center text-gray-500 mt-4">
