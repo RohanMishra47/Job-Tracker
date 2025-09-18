@@ -53,6 +53,13 @@ const JobBoard: React.FC = () => {
     const saved = localStorage.getItem('jobFilterPresets');
     return saved ? JSON.parse(saved) : [];
   });
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(window.location.href);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   useEffect(() => {
     localStorage.setItem('jobFilterPresets', JSON.stringify(presets));
@@ -102,6 +109,9 @@ const JobBoard: React.FC = () => {
       debouncedUpdate.cancel();
     };
   }, [searchQueryInput, debouncedUpdate]);
+
+  const isDefaultFilterState = () =>
+    searchQuery === '' && selectedStatuses.length === 0 && selectedJobTypes.length === 0;
 
   const filteredJobs = useMemo(() => {
     return allJobs.filter((job) => {
@@ -290,6 +300,25 @@ const JobBoard: React.FC = () => {
           ))}
         </div>
       )}
+
+      <div className="relative group inline-block">
+        <button
+          onClick={handleCopy}
+          disabled={isDefaultFilterState()}
+          className={`px-3 py-1 text-sm rounded transition ${
+            isDefaultFilterState()
+              ? 'bg-gray-300 cursor-not-allowed'
+              : 'bg-blue-600 text-white hover:bg-blue-700'
+          }`}
+        >
+          {copied ? 'Link Copied!' : 'Copy Link'}
+        </button>
+        {isDefaultFilterState() && (
+          <span className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 bg-gray-800 text-white text-xs px-2 py-1 rounded whitespace-nowrap z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-500 pointer-events-none">
+            Apply filters to enable sharing
+          </span>
+        )}
+      </div>
 
       <select
         onChange={(e) => {
