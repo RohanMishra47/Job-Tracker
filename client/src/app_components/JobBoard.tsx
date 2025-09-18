@@ -32,10 +32,23 @@ const allJobTypes = ['internship', 'full-time', 'part-time', 'remote'];
 const JobBoard: React.FC = () => {
   const [jobs, setJobs] = useState<JobMap>({});
   const [allJobs, setAllJobs] = useState<Job[]>([]);
-  const [searchQueryInput, setSearchQueryInput] = useState('');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
-  const [selectedJobTypes, setSelectedJobTypes] = useState<string[]>([]);
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  const getInitialFilters = () => {
+    const params = new URLSearchParams(window.location.search);
+    const search = params.get('search') || '';
+    const status = params.get('status')?.split(',').filter(Boolean) || [];
+    const type = params.get('type')?.split(',').filter(Boolean) || [];
+
+    return { search, status, type };
+  };
+
+  const initialFilters = getInitialFilters();
+
+  const [searchQueryInput, setSearchQueryInput] = useState(initialFilters.search);
+  const [searchQuery, setSearchQuery] = useState(initialFilters.search);
+  const [selectedStatuses, setSelectedStatuses] = useState<string[]>(initialFilters.status);
+  const [selectedJobTypes, setSelectedJobTypes] = useState<string[]>(initialFilters.type);
   const [presets, setPresets] = useState<FilterPreset[]>(() => {
     const saved = localStorage.getItem('jobFilterPresets');
     return saved ? JSON.parse(saved) : [];
@@ -71,6 +84,7 @@ const JobBoard: React.FC = () => {
 
   useEffect(() => {
     fetchJobs();
+    setIsInitialized(true);
   }, []);
 
   const debouncedUpdate = useMemo(
@@ -84,7 +98,6 @@ const JobBoard: React.FC = () => {
   useEffect(() => {
     debouncedUpdate(searchQueryInput);
 
-    // cleanup to avoid memory leaks
     return () => {
       debouncedUpdate.cancel();
     };
@@ -113,6 +126,20 @@ const JobBoard: React.FC = () => {
     });
     return grouped;
   }, [filteredJobs]);
+
+  // Only update URL after initialization to avoid overwriting initial URL params
+  useEffect(() => {
+    if (!isInitialized) return;
+
+    const params = new URLSearchParams();
+
+    if (searchQuery) params.set('search', searchQuery);
+    if (selectedStatuses.length > 0) params.set('status', selectedStatuses.join(','));
+    if (selectedJobTypes.length > 0) params.set('type', selectedJobTypes.join(','));
+
+    const newUrl = `${window.location.pathname}?${params.toString()}`;
+    window.history.replaceState({}, '', newUrl);
+  }, [searchQuery, selectedStatuses, selectedJobTypes, isInitialized]);
 
   const handleDragEnd = (result: DropResult) => {
     const { source, destination } = result;
@@ -162,6 +189,13 @@ const JobBoard: React.FC = () => {
     }
   };
 
+  const clearAllFilters = () => {
+    setSelectedStatuses([]);
+    setSelectedJobTypes([]);
+    setSearchQuery('');
+    setSearchQueryInput(''); // Also clear the input
+  };
+
   return (
     <div>
       <input
@@ -202,22 +236,21 @@ const JobBoard: React.FC = () => {
         </label>
       ))}
 
-      <button
-        onClick={() => {
-          setSelectedStatuses([]);
-          setSelectedJobTypes([]);
-          setSearchQuery('');
-        }}
-      >
-        Clear All Filters
-      </button>
+      <button onClick={clearAllFilters}>Clear All Filters</button>
 
       {searchQuery && (
         <div className="flex items-center gap-2 mb-2">
           <span className="font-semibold text-sm text-gray-500">Search:</span>
           <span className="tag transition-opacity duration-300 ease-in-out opacity-100">
             {searchQuery}
-            <button onClick={() => setSearchQuery('')}>×</button>
+            <button
+              onClick={() => {
+                setSearchQuery('');
+                setSearchQueryInput(''); // Also clear the input
+              }}
+            >
+              ×
+            </button>
           </span>
         </div>
       )}
@@ -263,12 +296,13 @@ const JobBoard: React.FC = () => {
           const selected = presets.find((p) => p.name === e.target.value);
           if (selected) {
             setSearchQuery(selected.searchQuery);
+            setSearchQueryInput(selected.searchQuery); // Sync input as well
             setSelectedStatuses(selected.statuses);
             setSelectedJobTypes(selected.jobTypes);
           }
         }}
       >
-        <option value="">Selet Preset</option>
+        <option value="">Select Preset</option>
         {presets.map((p) => (
           <option key={p.name} value={p.name}>
             {p.name}
@@ -282,7 +316,7 @@ const JobBoard: React.FC = () => {
             <span>{p.name}</span>
             <button
               className="text-red-500 hover:text-red-700"
-              onClick={() => setPresets((prev) => prev.filter((preset) => preset.name != p.name))}
+              onClick={() => setPresets((prev) => prev.filter((preset) => preset.name !== p.name))}
             >
               x
             </button>
