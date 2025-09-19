@@ -25,6 +25,7 @@ type FilterPreset = {
   searchQuery: string;
   statuses: string[];
   jobTypes: string[];
+  sortBy: string;
 };
 
 // Constants
@@ -38,12 +39,14 @@ const JobBoard: React.FC = () => {
     const search = params.get('search');
     const status = params.get('status')?.split(',').filter(Boolean);
     const type = params.get('type')?.split(',').filter(Boolean);
+    const sort = params.get('sort') === 'oldest' ? 'oldest' : 'newest';
 
-    if (search || status?.length || type?.length) {
+    if (search || status?.length || type?.length || sort) {
       return {
         search: search || '',
         status: status || [],
         type: type || [],
+        sort: sort || 'newest',
       };
     }
 
@@ -54,6 +57,7 @@ const JobBoard: React.FC = () => {
         search: parsed.searchQuery || '',
         status: parsed.selectedStatuses || [],
         type: parsed.selectedJobTypes || [],
+        sort: parsed.sortBy || '',
       };
     }
 
@@ -61,6 +65,12 @@ const JobBoard: React.FC = () => {
   };
 
   const initialFilters = getInitialFilters();
+
+  const extractTimestampFromId = (id: string): number => {
+    const timestampHex = id.substring(0, 8);
+    const timestamp = parseInt(timestampHex, 16);
+    return timestamp * 1000; // Convert to milliseconds
+  };
 
   // State declarations
   const [jobs, setJobs] = useState<JobMap>({});
@@ -70,6 +80,7 @@ const JobBoard: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState(initialFilters.search);
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>(initialFilters.status);
   const [selectedJobTypes, setSelectedJobTypes] = useState<string[]>(initialFilters.type);
+  const [sortBy, setSortBy] = useState<'newest' | 'oldest'>(initialFilters.sort);
   const [presets, setPresets] = useState<FilterPreset[]>(() => {
     const saved = localStorage.getItem('jobFilterPresets');
     return saved ? JSON.parse(saved) : [];
@@ -100,14 +111,22 @@ const JobBoard: React.FC = () => {
     });
   }, [allJobs, searchQuery, selectedStatuses, selectedJobTypes]);
 
+  const sortedFilteredJobs = useMemo(() => {
+    return [...filteredJobs].sort((a, b) => {
+      const timeA = extractTimestampFromId(a._id);
+      const timeB = extractTimestampFromId(b._id);
+      return sortBy === 'newest' ? timeB - timeA : timeA - timeB;
+    });
+  }, [filteredJobs, sortBy]);
+
   const filteredJobsByStatus = useMemo(() => {
     const grouped: Record<string, Job[]> = {};
-    filteredJobs.forEach((job) => {
+    sortedFilteredJobs.forEach((job) => {
       if (!grouped[job.status]) grouped[job.status] = [];
       grouped[job.status].push(job);
     });
     return grouped;
-  }, [filteredJobs]);
+  }, [sortedFilteredJobs]);
 
   // API functions
   const fetchJobs = async () => {
@@ -223,10 +242,11 @@ const JobBoard: React.FC = () => {
       searchQuery,
       selectedStatuses,
       selectedJobTypes,
+      sortBy,
     };
 
     localStorage.setItem('activeFilters', JSON.stringify(filterState));
-  }, [searchQuery, selectedStatuses, selectedJobTypes]);
+  }, [searchQuery, selectedStatuses, selectedJobTypes, sortBy]);
 
   // Only update URL after initialization to avoid overwriting initial URL params
   useEffect(() => {
@@ -237,10 +257,11 @@ const JobBoard: React.FC = () => {
     if (searchQuery) params.set('search', searchQuery);
     if (selectedStatuses.length > 0) params.set('status', selectedStatuses.join(','));
     if (selectedJobTypes.length > 0) params.set('type', selectedJobTypes.join(','));
+    if (sortBy) params.set('sort', sortBy);
 
     const newUrl = `${window.location.pathname}?${params.toString()}`;
     window.history.replaceState({}, '', newUrl);
-  }, [searchQuery, selectedStatuses, selectedJobTypes, isInitialized]);
+  }, [searchQuery, selectedStatuses, selectedJobTypes, isInitialized, sortBy]);
 
   // Render
   return (
@@ -303,7 +324,7 @@ const JobBoard: React.FC = () => {
                 setSearchQueryInput(''); // Also clear the input
               }}
             >
-              ×
+              x
             </button>
           </span>
         </div>
@@ -321,7 +342,7 @@ const JobBoard: React.FC = () => {
               <button
                 onClick={() => setSelectedStatuses((prev) => prev.filter((s) => s !== status))}
               >
-                ×
+                x
               </button>
             </span>
           ))}
@@ -371,9 +392,12 @@ const JobBoard: React.FC = () => {
           const selected = presets.find((p) => p.name === e.target.value);
           if (selected) {
             setSearchQuery(selected.searchQuery);
-            setSearchQueryInput(selected.searchQuery); // Sync input as well
+            setSearchQueryInput(selected.searchQuery);
             setSelectedStatuses(selected.statuses);
             setSelectedJobTypes(selected.jobTypes);
+            if (selected.sortBy === 'newest' || selected.sortBy === 'oldest') {
+              setSortBy(selected.sortBy);
+            }
           }
         }}
       >
@@ -384,6 +408,25 @@ const JobBoard: React.FC = () => {
           </option>
         ))}
       </select>
+
+      <div className="flex gap-2">
+        <button
+          onClick={() => setSortBy('newest')}
+          className={`px-3 py-1 rounded text-sm ${
+            sortBy === 'newest' ? 'bg-blue-600 text-white' : 'bg-gray-200'
+          }`}
+        >
+          Newest
+        </button>
+        <button
+          onClick={() => setSortBy('oldest')}
+          className={`px-3 py-1 rounded text-sm ${
+            sortBy === 'oldest' ? 'bg-blue-600 text-white' : 'bg-gray-200'
+          }`}
+        >
+          Oldest
+        </button>
+      </div>
 
       {/* Preset List */}
       <ul className="space-y-2">
@@ -411,6 +454,7 @@ const JobBoard: React.FC = () => {
             searchQuery,
             statuses: selectedStatuses,
             jobTypes: selectedJobTypes,
+            sortBy,
           };
 
           setPresets((prev) => [...prev, newPreset]);
