@@ -66,12 +66,6 @@ const JobBoard: React.FC = () => {
 
   const initialFilters = getInitialFilters();
 
-  const extractTimestampFromId = (id: string): number => {
-    const timestampHex = id.substring(0, 8);
-    const timestamp = parseInt(timestampHex, 16);
-    return timestamp * 1000; // Convert to milliseconds
-  };
-
   // State declarations
   const [jobs, setJobs] = useState<JobMap>({});
   const [allJobs, setAllJobs] = useState<Job[]>([]);
@@ -111,47 +105,14 @@ const JobBoard: React.FC = () => {
     });
   }, [allJobs, searchQuery, selectedStatuses, selectedJobTypes]);
 
-  const sortedFilteredJobs = useMemo(() => {
-    return [...filteredJobs].sort((a, b) => {
-      const timeA = extractTimestampFromId(a._id);
-      const timeB = extractTimestampFromId(b._id);
-      return sortBy === 'newest' ? timeB - timeA : timeA - timeB;
-    });
-  }, [filteredJobs, sortBy]);
-
   const filteredJobsByStatus = useMemo(() => {
     const grouped: Record<string, Job[]> = {};
-    sortedFilteredJobs.forEach((job) => {
+    filteredJobs.forEach((job) => {
       if (!grouped[job.status]) grouped[job.status] = [];
       grouped[job.status].push(job);
     });
     return grouped;
-  }, [sortedFilteredJobs]);
-
-  // API functions
-  const fetchJobs = async () => {
-    try {
-      console.log('Token read from storage:', localStorage.getItem('token'));
-
-      const response = await api.get('/jobs');
-
-      const jobList: Job[] = response.data ?? [];
-      setAllJobs(jobList);
-
-      const grouped: JobMap = allStatuses.reduce((acc, status) => {
-        acc[status] = [];
-        return acc;
-      }, {} as JobMap);
-
-      jobList.forEach((job) => {
-        grouped[job.status].push(job);
-      });
-
-      setJobs(grouped);
-    } catch (error) {
-      console.error('Error fetching jobs:', error);
-    }
-  };
+  }, [filteredJobs]);
 
   const updateJobStatus = async (_id: string, status: string) => {
     try {
@@ -225,9 +186,36 @@ const JobBoard: React.FC = () => {
 
   // Effects
   useEffect(() => {
+    // API function
+    const fetchJobs = async () => {
+      try {
+        console.log('Token read from storage:', localStorage.getItem('token'));
+
+        const params = new URLSearchParams();
+        params.set('sortBy', sortBy);
+
+        const response = await api.get(`/jobs?${params.toString()}`);
+
+        const jobList: Job[] = response.data ?? [];
+        setAllJobs(jobList);
+
+        const grouped: JobMap = allStatuses.reduce((acc, status) => {
+          acc[status] = [];
+          return acc;
+        }, {} as JobMap);
+
+        jobList.forEach((job) => {
+          grouped[job.status].push(job);
+        });
+
+        setJobs(grouped);
+      } catch (error) {
+        console.error('Error fetching jobs:', error);
+      }
+    };
     fetchJobs();
     setIsInitialized(true);
-  }, []);
+  }, [sortBy]);
 
   useEffect(() => {
     localStorage.setItem('jobFilterPresets', JSON.stringify(presets));

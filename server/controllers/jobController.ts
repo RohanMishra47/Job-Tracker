@@ -31,7 +31,12 @@ export const createJob = async (req: RequestWithUser, res: Response) => {
 // GET /api/jobs
 export const getJobs = async (req: RequestWithUser, res: Response) => {
   const userId = req.user?.id; // Using _id instead of id
-  const jobs = await Job.find({ createdBy: userId }).sort({ createdAt: -1 });
+  const { sortBy = "newest" } = req.query;
+
+  const sortDirection = sortBy === "oldest" ? 1 : -1;
+  const jobs = await Job.find({ createdBy: userId }).sort({
+    _id: sortDirection,
+  });
   res.json(jobs);
 };
 
