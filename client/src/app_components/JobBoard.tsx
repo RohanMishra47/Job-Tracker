@@ -6,6 +6,7 @@ import toast from 'react-hot-toast';
 import { api } from '../instances/axiosInstance';
 import JobColumn from './JobColumn';
 
+// Types
 type Job = {
   _id: string;
   company: string;
@@ -26,14 +27,12 @@ type FilterPreset = {
   jobTypes: string[];
 };
 
+// Constants
 const allStatuses = ['applied', 'pending', 'interviewing', 'offer', 'rejected'];
 const allJobTypes = ['internship', 'full-time', 'part-time', 'remote'];
 
 const JobBoard: React.FC = () => {
-  const [jobs, setJobs] = useState<JobMap>({});
-  const [allJobs, setAllJobs] = useState<Job[]>([]);
-  const [isInitialized, setIsInitialized] = useState(false);
-
+  // Helper functions
   const getInitialFilters = () => {
     const params = new URLSearchParams(window.location.search);
     const search = params.get('search');
@@ -63,6 +62,10 @@ const JobBoard: React.FC = () => {
 
   const initialFilters = getInitialFilters();
 
+  // State declarations
+  const [jobs, setJobs] = useState<JobMap>({});
+  const [allJobs, setAllJobs] = useState<Job[]>([]);
+  const [isInitialized, setIsInitialized] = useState(false);
   const [searchQueryInput, setSearchQueryInput] = useState(initialFilters.search);
   const [searchQuery, setSearchQuery] = useState(initialFilters.search);
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>(initialFilters.status);
@@ -73,45 +76,7 @@ const JobBoard: React.FC = () => {
   });
   const [copied, setCopied] = useState(false);
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(window.location.href);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  useEffect(() => {
-    localStorage.setItem('jobFilterPresets', JSON.stringify(presets));
-  }, [presets]);
-
-  const fetchJobs = async () => {
-    try {
-      console.log('Token read from storage:', localStorage.getItem('token'));
-
-      const response = await api.get('/jobs');
-
-      const jobList: Job[] = response.data ?? [];
-      setAllJobs(jobList);
-
-      const grouped: JobMap = allStatuses.reduce((acc, status) => {
-        acc[status] = [];
-        return acc;
-      }, {} as JobMap);
-
-      jobList.forEach((job) => {
-        grouped[job.status].push(job);
-      });
-
-      setJobs(grouped);
-    } catch (error) {
-      console.error('Error fetching jobs:', error);
-    }
-  };
-
-  useEffect(() => {
-    fetchJobs();
-    setIsInitialized(true);
-  }, []);
-
+  // Memoized values
   const debouncedUpdate = useMemo(
     () =>
       debounce((value: string) => {
@@ -119,27 +84,6 @@ const JobBoard: React.FC = () => {
       }, 250),
     []
   );
-
-  useEffect(() => {
-    debouncedUpdate(searchQueryInput);
-
-    return () => {
-      debouncedUpdate.cancel();
-    };
-  }, [searchQueryInput, debouncedUpdate]);
-
-  useEffect(() => {
-    const filterState = {
-      searchQuery,
-      selectedStatuses,
-      selectedJobTypes,
-    };
-
-    localStorage.setItem('activeFilters', JSON.stringify(filterState));
-  }, [searchQuery, selectedStatuses, selectedJobTypes]);
-
-  const isDefaultFilterState = () =>
-    searchQuery === '' && selectedStatuses.length === 0 && selectedJobTypes.length === 0;
 
   const filteredJobs = useMemo(() => {
     return allJobs.filter((job) => {
@@ -165,19 +109,56 @@ const JobBoard: React.FC = () => {
     return grouped;
   }, [filteredJobs]);
 
-  // Only update URL after initialization to avoid overwriting initial URL params
-  useEffect(() => {
-    if (!isInitialized) return;
+  // API functions
+  const fetchJobs = async () => {
+    try {
+      console.log('Token read from storage:', localStorage.getItem('token'));
 
-    const params = new URLSearchParams();
+      const response = await api.get('/jobs');
 
-    if (searchQuery) params.set('search', searchQuery);
-    if (selectedStatuses.length > 0) params.set('status', selectedStatuses.join(','));
-    if (selectedJobTypes.length > 0) params.set('type', selectedJobTypes.join(','));
+      const jobList: Job[] = response.data ?? [];
+      setAllJobs(jobList);
 
-    const newUrl = `${window.location.pathname}?${params.toString()}`;
-    window.history.replaceState({}, '', newUrl);
-  }, [searchQuery, selectedStatuses, selectedJobTypes, isInitialized]);
+      const grouped: JobMap = allStatuses.reduce((acc, status) => {
+        acc[status] = [];
+        return acc;
+      }, {} as JobMap);
+
+      jobList.forEach((job) => {
+        grouped[job.status].push(job);
+      });
+
+      setJobs(grouped);
+    } catch (error) {
+      console.error('Error fetching jobs:', error);
+    }
+  };
+
+  const updateJobStatus = async (_id: string, status: string) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        toast.error('Token missing. Are you logged in?');
+        return;
+      }
+      const response = await api.put(`/jobs/${_id}/status`, { status });
+      toast.success(`Moved to ${status}`);
+      console.log('Job updated:', response.data);
+    } catch (error) {
+      const axiosError = error as AxiosError<{ error: string }>;
+
+      const errorMsg = axiosError.response?.data?.error || axiosError.message || 'Unknown error';
+      toast.error('Failed to update job status');
+      console.error('Frontend error updating job:', errorMsg);
+    }
+  };
+
+  // Event handlers
+  const handleCopy = () => {
+    navigator.clipboard.writeText(window.location.href);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   const handleDragEnd = (result: DropResult) => {
     const { source, destination } = result;
@@ -208,25 +189,6 @@ const JobBoard: React.FC = () => {
     }
   };
 
-  const updateJobStatus = async (_id: string, status: string) => {
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        toast.error('Token missing. Are you logged in?');
-        return;
-      }
-      const response = await api.put(`/jobs/${_id}/status`, { status });
-      toast.success(`Moved to ${status}`);
-      console.log('Job updated:', response.data);
-    } catch (error) {
-      const axiosError = error as AxiosError<{ error: string }>;
-
-      const errorMsg = axiosError.response?.data?.error || axiosError.message || 'Unknown error';
-      toast.error('Failed to update job status');
-      console.error('Frontend error updating job:', errorMsg);
-    }
-  };
-
   const clearAllFilters = () => {
     setSelectedStatuses([]);
     setSelectedJobTypes([]);
@@ -235,8 +197,55 @@ const JobBoard: React.FC = () => {
     localStorage.removeItem('activeFilters');
   };
 
+  const isDefaultFilterState = () =>
+    searchQuery === '' && selectedStatuses.length === 0 && selectedJobTypes.length === 0;
+
+  // Effects
+  useEffect(() => {
+    fetchJobs();
+    setIsInitialized(true);
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('jobFilterPresets', JSON.stringify(presets));
+  }, [presets]);
+
+  useEffect(() => {
+    debouncedUpdate(searchQueryInput);
+
+    return () => {
+      debouncedUpdate.cancel();
+    };
+  }, [searchQueryInput, debouncedUpdate]);
+
+  useEffect(() => {
+    const filterState = {
+      searchQuery,
+      selectedStatuses,
+      selectedJobTypes,
+    };
+
+    localStorage.setItem('activeFilters', JSON.stringify(filterState));
+  }, [searchQuery, selectedStatuses, selectedJobTypes]);
+
+  // Only update URL after initialization to avoid overwriting initial URL params
+  useEffect(() => {
+    if (!isInitialized) return;
+
+    const params = new URLSearchParams();
+
+    if (searchQuery) params.set('search', searchQuery);
+    if (selectedStatuses.length > 0) params.set('status', selectedStatuses.join(','));
+    if (selectedJobTypes.length > 0) params.set('type', selectedJobTypes.join(','));
+
+    const newUrl = `${window.location.pathname}?${params.toString()}`;
+    window.history.replaceState({}, '', newUrl);
+  }, [searchQuery, selectedStatuses, selectedJobTypes, isInitialized]);
+
+  // Render
   return (
     <div>
+      {/* Search Input */}
       <input
         type="text"
         placeholder="Search by company or position"
@@ -245,6 +254,8 @@ const JobBoard: React.FC = () => {
         className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300"
       />
 
+      {/* Status Filters */}
+      <h3>Status Filters</h3>
       {allStatuses.map((status) => (
         <label key={status} className="flex items-center gap-2">
           <input
@@ -260,6 +271,8 @@ const JobBoard: React.FC = () => {
         </label>
       ))}
 
+      {/* Job Type Filters */}
+      <h3>JobType Filters</h3>
       {allJobTypes.map((jobType) => (
         <label key={jobType} className="flex items-center gap-2">
           <input
@@ -275,8 +288,10 @@ const JobBoard: React.FC = () => {
         </label>
       ))}
 
+      {/* Clear Filters Button */}
       <button onClick={clearAllFilters}>Clear All Filters</button>
 
+      {/* Active Filter Tags */}
       {searchQuery && (
         <div className="flex items-center gap-2 mb-2">
           <span className="font-semibold text-sm text-gray-500">Search:</span>
@@ -330,6 +345,7 @@ const JobBoard: React.FC = () => {
         </div>
       )}
 
+      {/* Copy Link Button */}
       <div className="relative group inline-block">
         <button
           onClick={handleCopy}
@@ -349,6 +365,7 @@ const JobBoard: React.FC = () => {
         )}
       </div>
 
+      {/* Preset Selection */}
       <select
         onChange={(e) => {
           const selected = presets.find((p) => p.name === e.target.value);
@@ -368,6 +385,7 @@ const JobBoard: React.FC = () => {
         ))}
       </select>
 
+      {/* Preset List */}
       <ul className="space-y-2">
         {presets.map((p) => (
           <li key={p.name} className="flex items-center gap-2">
@@ -382,6 +400,7 @@ const JobBoard: React.FC = () => {
         ))}
       </ul>
 
+      {/* Save Preset Button */}
       <button
         onClick={() => {
           const name = prompt('Name this preset');
@@ -400,12 +419,14 @@ const JobBoard: React.FC = () => {
         Save Current Filters
       </button>
 
+      {/* No Results Message */}
       {Object.keys(filteredJobsByStatus).length === 0 && (
         <div className="text-center text-gray-500 mt-4">
           No jobs match your filters. Try adjusting your search or clearing filters.
         </div>
       )}
 
+      {/* Job Columns */}
       <DragDropContext onDragEnd={handleDragEnd}>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {Object.entries(filteredJobsByStatus).map(([status, jobs]) => (
