@@ -36,11 +36,29 @@ const JobBoard: React.FC = () => {
 
   const getInitialFilters = () => {
     const params = new URLSearchParams(window.location.search);
-    const search = params.get('search') || '';
-    const status = params.get('status')?.split(',').filter(Boolean) || [];
-    const type = params.get('type')?.split(',').filter(Boolean) || [];
+    const search = params.get('search');
+    const status = params.get('status')?.split(',').filter(Boolean);
+    const type = params.get('type')?.split(',').filter(Boolean);
 
-    return { search, status, type };
+    if (search || status?.length || type?.length) {
+      return {
+        search: search || '',
+        status: status || [],
+        type: type || [],
+      };
+    }
+
+    const saved = localStorage.getItem('activeFilters');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      return {
+        search: parsed.searchQuery || '',
+        status: parsed.selectedStatuses || [],
+        type: parsed.selectedJobTypes || [],
+      };
+    }
+
+    return { search: '', status: [], type: [] };
   };
 
   const initialFilters = getInitialFilters();
@@ -109,6 +127,16 @@ const JobBoard: React.FC = () => {
       debouncedUpdate.cancel();
     };
   }, [searchQueryInput, debouncedUpdate]);
+
+  useEffect(() => {
+    const filterState = {
+      searchQuery,
+      selectedStatuses,
+      selectedJobTypes,
+    };
+
+    localStorage.setItem('activeFilters', JSON.stringify(filterState));
+  }, [searchQuery, selectedStatuses, selectedJobTypes]);
 
   const isDefaultFilterState = () =>
     searchQuery === '' && selectedStatuses.length === 0 && selectedJobTypes.length === 0;
@@ -203,7 +231,8 @@ const JobBoard: React.FC = () => {
     setSelectedStatuses([]);
     setSelectedJobTypes([]);
     setSearchQuery('');
-    setSearchQueryInput(''); // Also clear the input
+    setSearchQueryInput('');
+    localStorage.removeItem('activeFilters');
   };
 
   return (
