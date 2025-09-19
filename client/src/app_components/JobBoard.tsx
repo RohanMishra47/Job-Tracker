@@ -213,11 +213,15 @@ const JobBoard: React.FC = () => {
     setSelectedJobTypes([]);
     setSearchQuery('');
     setSearchQueryInput('');
+    setSortBy('newest');
     localStorage.removeItem('activeFilters');
   };
 
   const isDefaultFilterState = () =>
-    searchQuery === '' && selectedStatuses.length === 0 && selectedJobTypes.length === 0;
+    searchQuery === '' &&
+    selectedStatuses.length === 0 &&
+    selectedJobTypes.length === 0 &&
+    sortBy === 'newest';
 
   // Effects
   useEffect(() => {
