@@ -33,8 +33,10 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 };
 
 export const login = async (req: Request, res: Response): Promise<void> => {
+  console.log("🔐 Login attempt received");
   try {
     const { email, password } = req.body;
+    console.log("📨 Payload:", { email, password });
 
     const user: IUser | null = await User.findOne({ email });
     if (!user) {
