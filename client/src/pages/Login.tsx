@@ -21,6 +21,8 @@ const Login = () => {
       setAccessToken(data.accessToken);
       localStorage.setItem('token', data.accessToken);
       console.log('Saved token:', data.accessToken);
+      console.log('Submitting login...');
+      console.log('API base:', import.meta.env.VITE_API_BASE);
       navigate('/dashboard');
     } catch (err: unknown) {
       if (axios.isAxiosError(err) && err.response) {
