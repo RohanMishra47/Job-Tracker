@@ -14,7 +14,7 @@ const app: Application = express();
 app.use(cookieParser());
 app.use(
   cors({
-    origin: "http://localhost:5173", // Your frontend URL
+    origin: "https://job-tracker-backend-u4xm.onrender.com", // Your frontend URL
     credentials: true, // Allow cookies to be sent
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
