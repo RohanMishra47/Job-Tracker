@@ -1,8 +1,13 @@
 FROM node:22-alpine
 RUN corepack enable && corepack prepare pnpm@10.15.1 --activate
+
 WORKDIR /app
 COPY package.json pnpm-lock.yaml* ./
 RUN pnpm install
 COPY . .
-EXPOSE 5173
-CMD ["pnpm", "dev", "--host", "0.0.0.0"]
+RUN pnpm build
+
+# Serve static files using a lightweight server
+RUN pnpm add serve
+EXPOSE 3000
+CMD ["pnpm", "serve", "-s", "dist", "-l", "3000"]
