@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
+import mongoose from "mongoose";
 import { IUser, User } from "../models/User";
 
 export const register = async (req: Request, res: Response): Promise<void> => {
@@ -34,11 +35,14 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 
 export const login = async (req: Request, res: Response): Promise<void> => {
   console.log("🔐 Login attempt received");
+  console.log("🔍 Attempting to find user in database...");
+  console.log("📊 Database connection status:", mongoose.connection.readyState);
   try {
     const { email, password } = req.body;
     console.log("📨 Payload:", { email, password });
-
     const user: IUser | null = await User.findOne({ email });
+    console.log("👤 User found:", user ? "YES" : "NO");
+    console.log("📧 Looking for email:", email);
     if (!user) {
       res.status(400).json({ error: "Invalid credentials" });
       return;
@@ -86,7 +90,8 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       console.error(err.message);
       res.status(500).json({ error: err.message });
     } else {
-      console.error("Unknown error", err);
+      console.log("❌ Database query error:", err);
+      // console.error("Unknown error", err);
       res.status(500).json({ error: "An unknown error occurred." });
     }
   }
