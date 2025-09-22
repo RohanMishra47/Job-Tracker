@@ -6,6 +6,7 @@ import mongoose from "mongoose";
 
 dotenv.config();
 
+import { User } from "./models/User";
 import authRoutes from "./routes/authRoutes";
 import jobRoutes from "./routes/jobRoutes";
 
@@ -32,6 +33,22 @@ app.post("/api/auth/refresh", (req, res) => {
   console.log("Path:", req.path);
   console.log("Cookies:", req.cookies);
   res.json({ message: "Refresh endpoint is working" });
+});
+
+app.get("/api/test-db", async (req, res) => {
+  try {
+    const userCount = await User.countDocuments();
+    res.json({
+      status: "connected",
+      userCount,
+      dbState: mongoose.connection.readyState,
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: "error",
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
 });
 
 mongoose.connection.on("connected", () => {
