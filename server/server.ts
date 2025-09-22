@@ -6,7 +6,6 @@ import mongoose from "mongoose";
 
 dotenv.config();
 
-import { User } from "./models/User";
 import authRoutes from "./routes/authRoutes";
 import jobRoutes from "./routes/jobRoutes";
 
@@ -25,22 +24,6 @@ app.use(express.json());
 
 app.use("/api/auth", authRoutes);
 app.use("/api/jobs", jobRoutes);
-
-app.get("/api/test-db", async (req, res) => {
-  try {
-    const userCount = await User.countDocuments();
-    res.json({
-      status: "connected",
-      userCount,
-      dbState: mongoose.connection.readyState,
-    });
-  } catch (error) {
-    res.status(500).json({
-      status: "error",
-      error: error instanceof Error ? error.message : String(error),
-    });
-  }
-});
 
 // Add this temporarily to your server.ts
 app.post("/api/auth/refresh", (req, res) => {
