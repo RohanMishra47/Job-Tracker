@@ -51,6 +51,14 @@ app.get("/api/test-db", async (req, res) => {
   }
 });
 
+app.get("/health", (req, res) => {
+  res.status(200).json({
+    status: "ok",
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+  });
+});
+
 mongoose.connection.on("connected", () => {
   console.log("✅ Connected to MongoDB Atlas");
 });
