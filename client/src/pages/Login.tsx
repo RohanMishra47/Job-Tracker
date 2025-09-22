@@ -16,7 +16,7 @@ const Login = () => {
     setError('');
 
     try {
-      const { data } = await api.post('http://localhost:5000/api/auth/login', form);
+      const { data } = await api.post('/auth/login', form);
       console.log('Login response data:', data);
       setAccessToken(data.accessToken);
       localStorage.setItem('token', data.accessToken);
