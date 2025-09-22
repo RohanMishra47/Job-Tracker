@@ -6,7 +6,7 @@ import mongoose from "mongoose";
 
 dotenv.config();
 
-import { User } from "./models/User";
+import { Job } from "./models/Job";
 import authRoutes from "./routes/authRoutes";
 import jobRoutes from "./routes/jobRoutes";
 
@@ -37,7 +37,7 @@ app.post("/api/auth/refresh", (req, res) => {
 
 app.get("/api/test-db", async (req, res) => {
   try {
-    const userCount = await User.countDocuments();
+    const userCount = await Job.countDocuments();
     res.json({
       status: "connected",
       userCount,
