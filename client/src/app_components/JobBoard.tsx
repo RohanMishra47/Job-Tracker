@@ -90,21 +90,6 @@ const JobBoard: React.FC = () => {
     []
   );
 
-  // const filteredJobs = useMemo(() => {
-  //   return allJobs.filter((job) => {
-  //     const matchesSearch =
-  //       job.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
-  //       job.position.toLowerCase().includes(searchQuery.toLowerCase());
-
-  //     const matchesStatus = selectedStatuses.length === 0 || selectedStatuses.includes(job.status);
-
-  //     const matchesJobType =
-  //       selectedJobTypes.length === 0 || selectedJobTypes.includes(job.jobType);
-
-  //     return matchesSearch && matchesStatus && matchesJobType;
-  //   });
-  // }, [allJobs, searchQuery, selectedStatuses, selectedJobTypes]);
-
   const filteredJobsByStatus = useMemo(() => {
     const grouped: Record<string, Job[]> = {};
     allJobs.forEach((job) => {
