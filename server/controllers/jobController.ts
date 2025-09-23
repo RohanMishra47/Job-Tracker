@@ -7,6 +7,16 @@ export const createJob = async (req: RequestWithUser, res: Response) => {
   const { company, position, status, jobType, location } = req.body;
   const createdBy = req.user?.id; // Changed from _id to id
 
+  for (let i = 1; i <= 30; i++) {
+    await Job.create({
+      company: `Company ${i}`,
+      position: `Test Job ${i}`,
+      status: "pending",
+      jobType: "full-time",
+      location: "location",
+    });
+  }
+
   try {
     const job = await Job.create({
       company,
