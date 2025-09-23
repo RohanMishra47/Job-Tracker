@@ -31,12 +31,36 @@ export const createJob = async (req: RequestWithUser, res: Response) => {
 // GET /api/jobs
 export const getJobs = async (req: RequestWithUser, res: Response) => {
   const userId = req.user?.id; // Using _id instead of id
-  const { sortBy = "newest" } = req.query;
+  const { search, status, type, sortBy = "newest" } = req.query;
 
-  const sortDirection = sortBy === "oldest" ? 1 : -1;
-  const jobs = await Job.find({ createdBy: userId }).sort({
-    _id: sortDirection,
-  });
+  const query: Record<string, any> = {};
+
+  if (search) {
+    query.position = { $regex: search, $options: "i" }; // case-insensitive search
+  }
+
+  if (status) {
+    const statusArray = Array.isArray(status)
+      ? status
+      : typeof status === "string"
+      ? status.split(",").filter(Boolean)
+      : [];
+    query.status = { $in: statusArray };
+  }
+
+  if (type) {
+    const typeArray = Array.isArray(type)
+      ? type
+      : typeof type === "string"
+      ? type.split(",").filter(Boolean)
+      : [];
+    query.jobType = { $in: typeArray };
+  }
+
+  const sortDirection = req.query.sortBy === "oldest" ? 1 : -1;
+
+  const combinedQuery = { createdBy: userId, ...query };
+  const jobs = await Job.find(combinedQuery).sort({ _id: sortDirection });
   res.json(jobs);
 };
 

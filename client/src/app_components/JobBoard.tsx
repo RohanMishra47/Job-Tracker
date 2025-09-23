@@ -90,29 +90,29 @@ const JobBoard: React.FC = () => {
     []
   );
 
-  const filteredJobs = useMemo(() => {
-    return allJobs.filter((job) => {
-      const matchesSearch =
-        job.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        job.position.toLowerCase().includes(searchQuery.toLowerCase());
+  // const filteredJobs = useMemo(() => {
+  //   return allJobs.filter((job) => {
+  //     const matchesSearch =
+  //       job.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  //       job.position.toLowerCase().includes(searchQuery.toLowerCase());
 
-      const matchesStatus = selectedStatuses.length === 0 || selectedStatuses.includes(job.status);
+  //     const matchesStatus = selectedStatuses.length === 0 || selectedStatuses.includes(job.status);
 
-      const matchesJobType =
-        selectedJobTypes.length === 0 || selectedJobTypes.includes(job.jobType);
+  //     const matchesJobType =
+  //       selectedJobTypes.length === 0 || selectedJobTypes.includes(job.jobType);
 
-      return matchesSearch && matchesStatus && matchesJobType;
-    });
-  }, [allJobs, searchQuery, selectedStatuses, selectedJobTypes]);
+  //     return matchesSearch && matchesStatus && matchesJobType;
+  //   });
+  // }, [allJobs, searchQuery, selectedStatuses, selectedJobTypes]);
 
   const filteredJobsByStatus = useMemo(() => {
     const grouped: Record<string, Job[]> = {};
-    filteredJobs.forEach((job) => {
+    allJobs.forEach((job) => {
       if (!grouped[job.status]) grouped[job.status] = [];
       grouped[job.status].push(job);
     });
     return grouped;
-  }, [filteredJobs]);
+  }, [allJobs]);
 
   const updateJobStatus = async (_id: string, status: string) => {
     try {
@@ -192,7 +192,10 @@ const JobBoard: React.FC = () => {
         console.log('Token read from storage:', localStorage.getItem('token'));
 
         const params = new URLSearchParams();
-        params.set('sortBy', sortBy);
+        if (searchQuery) params.set('search', searchQuery);
+        if (selectedStatuses.length) params.set('status', selectedStatuses.join(','));
+        if (selectedJobTypes.length) params.set('type', selectedJobTypes.join(','));
+        if (sortBy) params.set('sortBy', sortBy);
 
         const response = await api.get(`/jobs?${params.toString()}`);
 
@@ -215,7 +218,7 @@ const JobBoard: React.FC = () => {
     };
     fetchJobs();
     setIsInitialized(true);
-  }, [sortBy]);
+  }, [searchQuery, selectedStatuses, selectedJobTypes, sortBy]);
 
   useEffect(() => {
     localStorage.setItem('jobFilterPresets', JSON.stringify(presets));
