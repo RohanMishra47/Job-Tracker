@@ -32,6 +32,9 @@ export const createJob = async (req: RequestWithUser, res: Response) => {
 export const getJobs = async (req: RequestWithUser, res: Response) => {
   const userId = req.user?.id; // Using _id instead of id
   const { search, status, type, sortBy = "newest" } = req.query;
+  const page = parseInt(req.query.page as string) || 1;
+  const limit = parseInt(req.query.limit as string) || 10;
+  const skip = (page - 1) * limit;
 
   const query: Record<string, any> = {};
 
@@ -60,8 +63,18 @@ export const getJobs = async (req: RequestWithUser, res: Response) => {
   const sortDirection = req.query.sortBy === "oldest" ? 1 : -1;
 
   const combinedQuery = { createdBy: userId, ...query };
-  const jobs = await Job.find(combinedQuery).sort({ _id: sortDirection });
-  res.json(jobs);
+  const jobs = await Job.find(combinedQuery)
+    .sort({ _id: sortDirection })
+    .skip(skip)
+    .limit(limit);
+
+  const totalJobs = await Job.countDocuments(query);
+  res.json({
+    jobs,
+    totalJobs,
+    page,
+    totalPages: Math.ceil(totalJobs / limit),
+  });
 };
 
 // PUT /api/jobs/:id

@@ -26,6 +26,8 @@ type FilterPreset = {
   statuses: string[];
   jobTypes: string[];
   sortBy: string;
+  page: number;
+  limit: number;
 };
 
 // Constants
@@ -40,13 +42,17 @@ const JobBoard: React.FC = () => {
     const status = params.get('status')?.split(',').filter(Boolean);
     const type = params.get('type')?.split(',').filter(Boolean);
     const sort = params.get('sort') === 'oldest' ? 'oldest' : 'newest';
+    const page = params.get('page');
+    const limit = params.get('limit');
 
-    if (search || status?.length || type?.length || sort) {
+    if (search || status?.length || type?.length || sort || page || limit) {
       return {
         search: search || '',
         status: status || [],
         type: type || [],
         sort: sort || 'newest',
+        page: page || 1,
+        limit: limit || 10,
       };
     }
 
@@ -58,10 +64,12 @@ const JobBoard: React.FC = () => {
         status: parsed.selectedStatuses || [],
         type: parsed.selectedJobTypes || [],
         sort: parsed.sortBy || '',
+        page: parsed.currentPage || '',
+        limit: parsed.limit || '',
       };
     }
 
-    return { search: '', status: [], type: [] };
+    return { search: '', status: [], type: [], sort: 'newest', page: 1, limit: 10 };
   };
 
   const initialFilters = getInitialFilters();
@@ -75,6 +83,11 @@ const JobBoard: React.FC = () => {
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>(initialFilters.status);
   const [selectedJobTypes, setSelectedJobTypes] = useState<string[]>(initialFilters.type);
   const [sortBy, setSortBy] = useState<'newest' | 'oldest'>(initialFilters.sort);
+  const [currentPage, setCurrentPage] = useState<number>(initialFilters.page);
+  const [limit] = useState<number>(initialFilters.limit);
+  const [totalJobs, setTotalJobs] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  // or make it user-configurable
   const [presets, setPresets] = useState<FilterPreset[]>(() => {
     const saved = localStorage.getItem('jobFilterPresets');
     return saved ? JSON.parse(saved) : [];
@@ -181,11 +194,15 @@ const JobBoard: React.FC = () => {
         if (selectedStatuses.length) params.set('status', selectedStatuses.join(','));
         if (selectedJobTypes.length) params.set('type', selectedJobTypes.join(','));
         if (sortBy) params.set('sortBy', sortBy);
+        if (currentPage) params.set('page', String(currentPage));
+        if (limit) params.set('limit', String(limit));
 
         const response = await api.get(`/jobs?${params.toString()}`);
 
-        const jobList: Job[] = response.data ?? [];
+        const jobList: Job[] = response.data.jobs ?? [];
         setAllJobs(jobList);
+        setTotalJobs(response.data.totalJobs);
+        setTotalPages(response.data.totalPages);
 
         const grouped: JobMap = allStatuses.reduce((acc, status) => {
           acc[status] = [];
@@ -203,7 +220,7 @@ const JobBoard: React.FC = () => {
     };
     fetchJobs();
     setIsInitialized(true);
-  }, [searchQuery, selectedStatuses, selectedJobTypes, sortBy]);
+  }, [searchQuery, selectedStatuses, selectedJobTypes, sortBy, currentPage, limit]);
 
   useEffect(() => {
     localStorage.setItem('jobFilterPresets', JSON.stringify(presets));
@@ -223,10 +240,12 @@ const JobBoard: React.FC = () => {
       selectedStatuses,
       selectedJobTypes,
       sortBy,
+      currentPage,
+      limit,
     };
 
     localStorage.setItem('activeFilters', JSON.stringify(filterState));
-  }, [searchQuery, selectedStatuses, selectedJobTypes, sortBy]);
+  }, [searchQuery, selectedStatuses, selectedJobTypes, sortBy, currentPage, limit]);
 
   // Only update URL after initialization to avoid overwriting initial URL params
   useEffect(() => {
@@ -238,10 +257,12 @@ const JobBoard: React.FC = () => {
     if (selectedStatuses.length > 0) params.set('status', selectedStatuses.join(','));
     if (selectedJobTypes.length > 0) params.set('type', selectedJobTypes.join(','));
     if (sortBy) params.set('sort', sortBy);
+    if (currentPage) params.set('page', String(currentPage));
+    if (limit) params.set('limit', String(limit));
 
     const newUrl = `${window.location.pathname}?${params.toString()}`;
     window.history.replaceState({}, '', newUrl);
-  }, [searchQuery, selectedStatuses, selectedJobTypes, isInitialized, sortBy]);
+  }, [searchQuery, selectedStatuses, selectedJobTypes, isInitialized, sortBy, currentPage, limit]);
 
   // Render
   return (
@@ -435,6 +456,8 @@ const JobBoard: React.FC = () => {
             statuses: selectedStatuses,
             jobTypes: selectedJobTypes,
             sortBy,
+            page: currentPage,
+            limit: limit,
           };
 
           setPresets((prev) => [...prev, newPreset]);
@@ -458,6 +481,21 @@ const JobBoard: React.FC = () => {
           ))}
         </div>
       </DragDropContext>
+      <div className="flex gap-2 mt-4">
+        <button disabled={currentPage === 1} onClick={() => setCurrentPage((prev) => prev - 1)}>
+          Previous
+        </button>
+        <span>
+          Page {currentPage} of {totalPages}
+        </span>
+        <button
+          disabled={currentPage === totalPages}
+          onClick={() => setCurrentPage((prev) => prev + 1)}
+        >
+          Next
+        </button>
+        <span>Jobs {totalJobs}</span>
+      </div>
     </div>
   );
 };
