@@ -1,5 +1,13 @@
 import axios, { AxiosError } from 'axios';
 
+export const restoreTokenFromStorage = () => {
+  const storedToken = localStorage.getItem('token');
+  if (storedToken) {
+    setAccessToken(storedToken);
+    console.log('Token restored from storage:', storedToken);
+  }
+};
+
 let accessToken: string | null = null;
 export const setAccessToken = (t: string) => {
   accessToken = t;
@@ -85,7 +93,7 @@ api.interceptors.response.use(
       setAccessToken(newToken);
       localStorage.setItem('token', newToken);
       config.headers = config.headers ?? {};
-      config.headers.Authorization = `Bearer ${accessToken}`;
+      config.headers.Authorization = `Bearer ${newToken}`;
 
       console.log('Retrying original request with new token');
       return api(config);

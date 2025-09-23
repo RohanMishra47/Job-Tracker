@@ -3,13 +3,14 @@ import { BrowserRouter, Route, Routes, useNavigate } from 'react-router-dom';
 import Dashboard from './app_components/Dashboard';
 import { AppSidebar } from './components/app-sidebar';
 import { SidebarInset, SidebarProvider, SidebarTrigger } from './components/ui/sidebar';
-import { setAccessToken } from './instances/axiosInstance';
+import { restoreTokenFromStorage, setAccessToken } from './instances/axiosInstance';
 import CreateJob from './pages/createJob';
 import EditJob from './pages/editJob';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import { isLoggedIn } from './utils/auth';
 
+restoreTokenFromStorage();
 // Create a separate component for the redirection logic
 const RedirectToLoginOrDashboard = () => {
   const navigate = useNavigate();

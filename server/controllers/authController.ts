@@ -69,9 +69,9 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     res.cookie("refresh_token", refreshToken, {
       httpOnly: true,
       path: "/",
-      maxAge: 24 * 60 * 60 * 1000, // 7 days in milliseconds
-      sameSite: "lax",
-      secure: false, // Set to true in production with HTTPS
+      maxAge: 24 * 60 * 60 * 1000,
+      sameSite: "none", // For cross-origin requests
+      secure: true, // For HTTPS in production
     });
 
     console.log("🍪 Cookie set successfully");
