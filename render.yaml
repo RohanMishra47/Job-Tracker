@@ -1,0 +1,9 @@
+services:
+  - type: web
+    env: static
+    buildCommand: cd client && pnpm install && pnpm build
+    staticPublishPath: ./client/dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
