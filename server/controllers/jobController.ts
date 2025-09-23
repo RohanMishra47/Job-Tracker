@@ -8,7 +8,7 @@ export const createJob = async (req: RequestWithUser, res: Response) => {
   const createdBy = req.user?.id; // Changed from _id to id
 
   for (let i = 1; i <= 30; i++) {
-    await Job.create({
+    const job = await Job.create({
       company: `Company ${i}`,
       position: `Test Job ${i}`,
       status: "pending",
