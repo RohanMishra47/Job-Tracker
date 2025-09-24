@@ -21,7 +21,14 @@ const jobSchema = new Schema<IJob>(
     position: { type: String, required: true },
     status: {
       type: String,
-      enum: ["applied", "declined", "interviewing", "offer", "rejected"],
+      enum: [
+        "pending",
+        "applied",
+        "declined",
+        "interviewing",
+        "offer",
+        "rejected",
+      ],
       default: "pending",
     },
     jobType: {
