@@ -26,7 +26,7 @@ export const seedJobs = async (req: RequestWithUser, res: Response) => {
         company: `Company ${i}`,
         position: `Test Job ${i}`,
         status:
-          i % 3 === 0 ? "interview" : i % 3 === 1 ? "declined" : "pending",
+          i % 3 === 0 ? "interviewing" : i % 3 === 1 ? "declined" : "pending",
         jobType: i % 2 === 0 ? "full-time" : "part-time",
         location: `Location ${i}`,
         createdBy,
