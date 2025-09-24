@@ -6,6 +6,7 @@ import { SidebarInset, SidebarProvider, SidebarTrigger } from './components/ui/s
 import { restoreTokenFromStorage, setAccessToken } from './instances/axiosInstance';
 import CreateJob from './pages/createJob';
 import EditJob from './pages/editJob';
+import JobDetail from './pages/JobDetail';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import { isLoggedIn } from './utils/auth';
@@ -44,6 +45,7 @@ function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/createJob" element={<CreateJob />} />
             <Route path="/editJob" element={<EditJob />} />
+            <Route path="/jobs/:id" element={<JobDetail />} />
           </Routes>
         </BrowserRouter>
       </SidebarInset>

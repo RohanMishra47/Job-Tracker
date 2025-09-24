@@ -134,6 +134,15 @@ export const getJobs = async (req: RequestWithUser, res: Response) => {
     totalPages: Math.ceil(totalJobs / limit),
   });
 };
+export const getFullJob = async (req: RequestWithUser, res: Response) => {
+  try {
+    const job = await Job.findById(req.params.id);
+    if (!job) return res.status(404).json({ message: "Job not found" });
+    res.json(job);
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
 
 // PUT /api/jobs/:id
 export const updateJob = async (req: RequestWithUser, res: Response) => {

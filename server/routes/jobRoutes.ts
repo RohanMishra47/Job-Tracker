@@ -2,6 +2,7 @@ import express from "express";
 import {
   createJob,
   deleteJob,
+  getFullJob,
   getJobs,
   seedJobs,
   updateJob,
@@ -15,7 +16,7 @@ router.use(protect);
 
 router.post("/seed", seedJobs);
 router.route("/").get(getJobs).post(createJob);
-router.route("/:id").put(updateJob).delete(deleteJob);
+router.route("/:id").get(getFullJob).put(updateJob).delete(deleteJob);
 
 router.put("/:id/status", async (req, res) => {
   try {
