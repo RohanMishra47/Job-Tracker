@@ -2,20 +2,38 @@ import { Response } from "express";
 import { RequestWithUser } from "../interfaces/reqInterfaces";
 import { Job } from "../models/Job";
 
+// Add a new route for seeding
+export const seedJobs = async (req: RequestWithUser, res: Response) => {
+  try {
+    const createdBy = req.user?.id;
+
+    // Clear existing test jobs first (optional)
+    // await Job.deleteMany({ company: /^Company \d+$/ });
+
+    const seedJobs = [];
+    for (let i = 1; i <= 30; i++) {
+      seedJobs.push({
+        company: `Company ${i}`,
+        position: `Test Job ${i}`,
+        status:
+          i % 3 === 0 ? "interview" : i % 3 === 1 ? "declined" : "pending",
+        jobType: i % 2 === 0 ? "full-time" : "part-time",
+        location: `Location ${i}`,
+        createdBy, // ✅ This is crucial!
+      });
+    }
+
+    await Job.insertMany(seedJobs);
+    res.status(200).json({ message: "30 test jobs created successfully!" });
+  } catch (error) {
+    res.status(500).json({ error: "Seeding failed" });
+  }
+};
+
 // POST /api/jobs
 export const createJob = async (req: RequestWithUser, res: Response) => {
   const { company, position, status, jobType, location } = req.body;
   const createdBy = req.user?.id; // Changed from _id to id
-
-  for (let i = 1; i <= 30; i++) {
-    const job = await Job.create({
-      company: `Company ${i}`,
-      position: `Test Job ${i}`,
-      status: "pending",
-      jobType: "full-time",
-      location: "location",
-    });
-  }
 
   try {
     const job = await Job.create({

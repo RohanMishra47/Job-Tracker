@@ -3,6 +3,7 @@ import {
   createJob,
   deleteJob,
   getJobs,
+  seedJobs,
   updateJob,
 } from "../controllers/jobController";
 import { protect } from "../middleware/authMiddleware";
@@ -12,6 +13,7 @@ const router = express.Router();
 
 router.use(protect);
 
+router.post("/seed", seedJobs);
 router.route("/").get(getJobs).post(createJob);
 router.route("/:id").put(updateJob).delete(deleteJob);
 
