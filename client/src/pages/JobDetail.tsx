@@ -14,7 +14,7 @@ const JobDetail = () => {
 
   useEffect(() => {
     const fetchJob = async () => {
-      const response = await api.get(`/jobs/${id}`);
+      const response = await api.get(`/jobs/:${id}`);
       setJob(response.data.job);
     };
     fetchJob();
