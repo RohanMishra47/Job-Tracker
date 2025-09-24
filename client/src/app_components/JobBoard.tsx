@@ -51,8 +51,8 @@ const JobBoard: React.FC = () => {
         status: status || [],
         type: type || [],
         sort: sort || 'newest',
-        page: page || 1,
-        limit: limit || 10,
+        page: page ? parseInt(page, 10) : 1,
+        limit: limit ? parseInt(limit, 10) : 10,
       };
     }
 
@@ -63,9 +63,9 @@ const JobBoard: React.FC = () => {
         search: parsed.searchQuery || '',
         status: parsed.selectedStatuses || [],
         type: parsed.selectedJobTypes || [],
-        sort: parsed.sortBy || '',
-        page: parsed.currentPage || '',
-        limit: parsed.limit || '',
+        sort: parsed.sortBy || 'newest',
+        page: parsed.currentPage ? parseInt(parsed.currentPage, 10) : 1,
+        limit: parsed.limit ? parseInt(parsed.limit, 10) : 10,
       };
     }
 
