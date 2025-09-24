@@ -2,14 +2,24 @@ import { Response } from "express";
 import { RequestWithUser } from "../interfaces/reqInterfaces";
 import { Job } from "../models/Job";
 
-// Add a new route for seeding
 export const seedJobs = async (req: RequestWithUser, res: Response) => {
+  console.log("🌱 Seeding endpoint hit!");
+  console.log("🔐 User ID:", req.user?.id);
+
   try {
     const createdBy = req.user?.id;
 
-    // Clear existing test jobs first (optional)
-    // await Job.deleteMany({ company: /^Company \d+$/ });
+    if (!createdBy) {
+      console.log("❌ No user ID found");
+      return res.status(400).json({ error: "User not authenticated" });
+    }
 
+    console.log("🗑️ Clearing existing test jobs...");
+    // Clear existing test jobs first (optional)
+    await Job.deleteMany({ company: /^Company \d+$/ });
+    console.log("✅ Test jobs cleared");
+
+    console.log("📝 Creating seed data...");
     const seedJobs = [];
     for (let i = 1; i <= 30; i++) {
       seedJobs.push({
@@ -19,14 +29,34 @@ export const seedJobs = async (req: RequestWithUser, res: Response) => {
           i % 3 === 0 ? "interview" : i % 3 === 1 ? "declined" : "pending",
         jobType: i % 2 === 0 ? "full-time" : "part-time",
         location: `Location ${i}`,
-        createdBy, // ✅ This is crucial!
+        createdBy,
       });
     }
 
-    await Job.insertMany(seedJobs);
-    res.status(200).json({ message: "30 test jobs created successfully!" });
+    console.log("💾 Inserting jobs into database...");
+    const result = await Job.insertMany(seedJobs);
+    console.log("✅ Jobs inserted:", result.length);
+
+    res.status(200).json({
+      message: `${result.length} test jobs created successfully!`,
+      jobsCreated: result.length,
+    });
   } catch (error) {
-    res.status(500).json({ error: "Seeding failed" });
+    console.error("❌ Detailed seeding error:", error);
+    if (error && typeof error === "object") {
+      console.error("Error name:", (error as { name?: string }).name);
+      console.error("Error message:", (error as { message?: string }).message);
+      console.error("Error stack:", (error as { stack?: string }).stack);
+      res.status(500).json({
+        error: "Seeding failed",
+        details: (error as { message?: string }).message,
+        name: (error as { name?: string }).name,
+      });
+    } else {
+      res
+        .status(500)
+        .json({ error: "Seeding failed", details: "Unknown error" });
+    }
   }
 };
 
