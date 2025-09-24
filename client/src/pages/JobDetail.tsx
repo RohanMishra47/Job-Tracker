@@ -1,3 +1,4 @@
+import { api } from '@/instances/axiosInstance';
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
@@ -12,9 +13,11 @@ const JobDetail = () => {
   });
 
   useEffect(() => {
-    fetch(`/api/jobs/${id}`)
-      .then((res) => res.json())
-      .then((data) => setJob(data));
+    const fetchJob = async () => {
+      const response = await api.get(`/jobs/${id}`);
+      setJob(response.data.job);
+    };
+    fetchJob();
   }, [id]);
 
   if (!job) return <p>Loading...</p>;
