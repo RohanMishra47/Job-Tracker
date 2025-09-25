@@ -1,6 +1,6 @@
 import { jobSchema } from '@/schemas/jobSchema';
-import { ZodError } from 'zod';
-import type { $ZodIssue } from 'zod/v4/core';
+// import { z } from 'zod'; // Standard import
+import type { ZodIssue } from 'zod'; // Public type (drop $ZodIssue)
 
 type Job = {
   company: string;
@@ -10,34 +10,31 @@ type Job = {
   location: string;
 };
 
-export function debounce<T extends (...args: Job[]) => void>(fn: T, delay: number) {
+// Fixed typing: Expects single Job, not Job[]
+export function debounce<T extends (formData: Job) => void>(fn: T, delay: number) {
   let timer: ReturnType<typeof setTimeout>;
-  return (...args: Parameters<T>) => {
+  return (formData: Job) => {
+    // Single arg
     clearTimeout(timer);
-    timer = setTimeout(() => fn(...args), delay);
+    timer = setTimeout(() => fn(formData), delay);
   };
 }
 
+// Updated: Use safeParse (no throw/catch needed)
 export const validateForm = (
   formData: Job,
   setIsValid: (v: boolean) => void,
-  setErrorMessages: (e: $ZodIssue[]) => void
+  setErrorMessages: (e: ZodIssue[]) => void // Standard type
 ) => {
-  try {
-    jobSchema.parse(formData);
-    setIsValid(true);
-    setErrorMessages([]);
-  } catch (err) {
-    setIsValid(false);
-    if (err instanceof ZodError) {
-      setErrorMessages(err.issues);
-    }
-  }
+  const parseResult = jobSchema.safeParse(formData);
+  setIsValid(parseResult.success);
+  setErrorMessages(parseResult.success ? [] : parseResult.error?.issues || []); // Safe array
 };
 
+// Create debounced version (500ms delay for better UX)
 export const createDebouncedValidate = (
   setIsValid: (v: boolean) => void,
-  setErrorMessages: (e: $ZodIssue[]) => void
+  setErrorMessages: (e: ZodIssue[]) => void
 ) => {
-  return debounce((formData) => validateForm(formData, setIsValid, setErrorMessages), 3000);
+  return debounce((formData) => validateForm(formData, setIsValid, setErrorMessages), 500);
 };

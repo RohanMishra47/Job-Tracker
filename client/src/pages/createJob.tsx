@@ -12,9 +12,8 @@ import { createDebouncedValidate } from '@/utils/validation';
 import axios from 'axios';
 import { ChevronDown } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react';
-import { z } from 'zod'; // Add explicit Zod import for v3/v4 consistency
-// For Zod v3: Use ZodError and err.errors
-// If v4: import { ZodError, ZodIssue } from 'zod'; and use err.issues
+import { z } from 'zod'; // Standard Zod import for v4
+// import { useNavigate } from 'react-router-dom'; // Uncomment if you want redirect
 
 type Job = {
   _id: string;
@@ -28,13 +27,12 @@ type Job = {
 const initialFormData = { company: '', position: '', status: '', jobType: '', location: '' };
 
 const CreateJob = () => {
-  // Fix: Use initialFormData for useState
   const [formData, setFormData] = useState(initialFormData);
   const [jobs, setJobs] = useState<Job[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
-  // Fix: Use ZodIssue (standard) and ensure array
-  const [errorMessages, setErrorMessages] = useState<z.core.$ZodIssue[]>([]);
+  // Standard type for v4: ZodIssue[]
+  const [errorMessages, setErrorMessages] = useState<z.ZodIssue[]>([]);
   const [isValid, setIsValid] = useState(false);
 
   const debouncedValidate = useMemo(
@@ -46,30 +44,29 @@ const CreateJob = () => {
     const fetchJobs = async () => {
       try {
         const response = await api.get('/jobs');
-        const jobList: Job[] = response.data ?? [];
+        // Extra safety: Ensure array even if data is unexpected
+        const jobList: Job[] = Array.isArray(response.data) ? response.data : [];
         setJobs(jobList);
       } catch (error) {
         console.error('Error fetching jobs', error);
-        setJobs([]); // Ensure array
+        setJobs([]);
       }
     };
 
     fetchJobs();
   }, []);
 
-  // Helper: Safe array for errorMessages (prevents .some errors)
+  // Safe errorMessages
   const safeErrorMessages = Array.isArray(errorMessages) ? errorMessages : [];
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     const updatedForm = { ...formData, [name]: value };
     setFormData(updatedForm);
-    // Clear field-specific errors on change (UX improvement)
     setErrorMessages((prev) => prev.filter((issue) => issue.path[0] !== name));
     debouncedValidate(updatedForm);
   };
 
-  // Fix: Handle dropdown changes (already in onSelect, but add clear errors)
   const handleDropdownChange = (field: 'status' | 'jobType', value: string) => {
     const updatedForm = { ...formData, [field]: value };
     setFormData(updatedForm);
@@ -78,64 +75,59 @@ const CreateJob = () => {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    // Note: FormEvent only
     e.preventDefault();
     setError('');
     setErrorMessages([]);
     setIsSubmitting(true);
 
-    console.log('Submit started with formData:', formData); // Debug: Check if reached
+    console.log('Submit started with formData:', formData); // Your confirmed log
+
+    // Validation: Use safeParse directly (no throw/catch for Zod)
+    console.log('Running validation...'); // Debug
+    const parseResult = jobSchema.safeParse(formData);
+    if (!parseResult.success) {
+      console.log('Validation failed, setting errors'); // Debug
+      setErrorMessages(parseResult.error.issues || []);
+      setError('Please fix the validation errors.');
+      setIsSubmitting(false);
+      return;
+    }
+    console.log('Validation passed'); // Debug
+
+    // Safe duplicate check
+    console.log('Checking duplicates...'); // Debug
+    const safeJobs = Array.isArray(jobs) ? jobs : [];
+    const isDuplicateCompany = safeJobs.some(
+      (job) => job.company?.trim().toLowerCase() === formData.company.trim().toLowerCase()
+    );
+    if (isDuplicateCompany) {
+      console.log('Duplicate found'); // Debug
+      setError('Company already exists');
+      setIsSubmitting(false);
+      return;
+    }
+    console.log('No duplicate, proceeding to API'); // Debug
 
     try {
-      // Use safeParse to avoid throw (more reliable than parse)
-      const parseResult = jobSchema.safeParse(formData);
-      if (!parseResult.success) {
-        throw new z.ZodError(parseResult.error.issues || []); // v3: .errors; v4: .issues
-      }
-
-      // Duplicate check (jobs is always array)
-      const isDuplicateCompany = jobs.some(
-        (job) => job.company.trim().toLowerCase() === formData.company.trim().toLowerCase()
-      );
-
-      if (isDuplicateCompany) {
-        setError('Company already exists');
-        return;
-      }
-
       console.log('About to send formData:', formData);
       console.log('API base URL:', api.defaults.baseURL);
 
       const { data } = await api.post('/jobs', formData);
       console.log('Response data:', data);
 
-      // Success: Reset form and feedback
+      // Success
       setFormData(initialFormData);
-      setErrorMessages([]);
-      setIsValid(false); // Reset for next use
-      alert('Job created successfully!'); // Or use toast/redirect: e.g., navigate('/dashboard');
-      // If you want redirect: import { useNavigate } from 'react-router-dom'; const navigate = useNavigate(); navigate('/dashboard');
+      setIsSubmitting(false);
+      alert('Job created successfully!'); // Or toast
+      // Optional: const navigate = useNavigate(); navigate('/dashboard');
     } catch (err: unknown) {
-      console.error('Full error object:', err);
-      console.error('Error type:', typeof err);
-      console.error('Error constructor:', err?.constructor?.name);
-
-      if (err instanceof z.ZodError) {
-        // v3: setErrorMessages(err.errors || []);
-        // v4: setErrorMessages(err.issues || []);
-        setErrorMessages(err.issues || []); // Adjust to .issues if v4
-        setError('Please fix the validation errors.');
-        return;
-      }
+      console.error('API/Non-Zod error:', err);
       if (axios.isAxiosError(err) && err.response) {
-        console.error('Axios error response:', err.response);
         setError(err.response.data?.message || err.response.data?.error || 'Job Creation Failed');
       } else {
-        console.error('Non-axios error:', err);
         setError(`An unknown error occurred: ${err instanceof Error ? err.message : 'Unknown'}`);
       }
-    } finally {
-      setIsSubmitting(false); // Remove timeout—simple and immediate
+      setIsSubmitting(false);
     }
   };
 
@@ -143,7 +135,7 @@ const CreateJob = () => {
     <div className="mx-auto mt-10 max-w-md rounded-xl bg-white p-6 shadow-lg">
       <h1 className="mb-6 text-center text-2xl font-bold text-gray-800">Create Job</h1>
       <form onSubmit={handleSubmit} className="space-y-5">
-        {/* Company */}
+        {/* Company - Same structure as before, using safeErrorMessages */}
         <div>
           <label htmlFor="company" className="block text-sm font-medium text-gray-700 mb-1">
             Company
@@ -172,7 +164,7 @@ const CreateJob = () => {
             ))}
         </div>
 
-        {/* Position */}
+        {/* Position - Identical pattern */}
         <div>
           <label htmlFor="position" className="block text-sm font-medium text-gray-700 mb-1">
             Position
@@ -228,7 +220,7 @@ const CreateJob = () => {
                 (status) => (
                   <DropdownMenuItem
                     key={status}
-                    onSelect={() => handleDropdownChange('status', status)} // Use helper
+                    onSelect={() => handleDropdownChange('status', status)}
                     className="px-3 py-2 cursor-pointer focus:bg-indigo-50 focus:text-indigo-700 transition-colors duration-150"
                   >
                     {status.charAt(0).toUpperCase() + status.slice(1)}
@@ -246,7 +238,7 @@ const CreateJob = () => {
             ))}
         </div>
 
-        {/* JobType Dropdown - Similar */}
+        {/* Job Type Dropdown - Same */}
         <div>
           <label htmlFor="jobType" className="block text-sm font-medium text-gray-700 mb-1">
             Job Type
@@ -320,7 +312,6 @@ const CreateJob = () => {
 
         {error && <p className="text-sm text-red-500">{error}</p>}
 
-        {/* Submit Button: Remove onClick to prevent double-call */}
         <Button
           type="submit"
           disabled={!isValid || isSubmitting}
@@ -350,7 +341,7 @@ const CreateJob = () => {
                 <path
                   className="opacity-75"
                   fill="currentColor"
-                  d="M4 12a8 8 0 018-8v4a4 4 00-4 4H4z"
+                  d="M4 12a8 8 0 018-8V8a4 4 0 00-4 4H4z"
                 />
               </svg>
               Creating...
