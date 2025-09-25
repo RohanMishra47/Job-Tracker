@@ -47,6 +47,8 @@ const CreateJob = () => {
   useEffect(() => {
     const fetchJobs = async () => {
       try {
+        console.log('About to send formData:', formData);
+        console.log('API base URL:', api.defaults.baseURL);
         const response = await api.get('/jobs');
         const jobList: Job[] = response.data ?? [];
 
@@ -101,14 +103,20 @@ const CreateJob = () => {
 
       setIsSubmitting(false);
     } catch (err: unknown) {
+      console.error('Full error object:', err);
+      console.error('Error type:', typeof err);
+      console.error('Error constructor:', err?.constructor?.name);
+
       if (err instanceof ZodError) {
         setErrorMessages(err.issues);
         return;
       }
       if (axios.isAxiosError(err) && err.response) {
+        console.error('Axios error response:', err.response);
         setError(err.response.data.message || 'Job Creation Failed');
       } else {
-        setError('An unknown error occured');
+        console.error('Non-axios error:', err);
+        setError(`An unknown error occurred: ${err instanceof Error ? err.message : 'Unknown'}`);
       }
       setIsSubmitting(false);
     } finally {
