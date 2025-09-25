@@ -47,8 +47,6 @@ const CreateJob = () => {
   useEffect(() => {
     const fetchJobs = async () => {
       try {
-        console.log('About to send formData:', formData);
-        console.log('API base URL:', api.defaults.baseURL);
         const response = await api.get('/jobs');
         const jobList: Job[] = response.data ?? [];
 
@@ -96,6 +94,9 @@ const CreateJob = () => {
         setError('Company already exists');
         return;
       }
+
+      console.log('About to send formData:', formData);
+      console.log('API base URL:', api.defaults.baseURL);
 
       const { data } = await api.post('/jobs', formData);
       console.log('response data:', data);
