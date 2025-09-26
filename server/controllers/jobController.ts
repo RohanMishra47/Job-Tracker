@@ -30,6 +30,18 @@ export const seedJobs = async (req: RequestWithUser, res: Response) => {
         jobType: i % 2 === 0 ? "full-time" : "part-time",
         location: `Location ${i}`,
         createdBy,
+        // Added new fields from IJob interface
+        description: i % 2 === 0 ? `Job description ${i}` : undefined,
+        salary: i % 2 === 0 ? [10000, 20000] : undefined,
+        experienceLevel: i % 2 === 0 ? "senior" : "junior",
+        tags: i % 2 === 0 ? ["Node.js", "Express.js"] : ["React", "Redux"],
+        applicationLink:
+          i % 2 === 0 ? `https://example.com/job/${i}` : undefined,
+        deadline: i % 2 === 0 ? new Date("2024-03-15") : undefined,
+        priority: i % 2 === 0 ? "high" : "medium",
+        source: i % 2 === 0 ? "LinkedIn" : "Company Site",
+        notes: i % 2 === 0 ? `This is a test job ${i}` : undefined,
+        isFavorite: i === 15 || i === 30,
       });
     }
 
