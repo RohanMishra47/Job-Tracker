@@ -50,19 +50,27 @@ const jobSchema = new Schema<IJob>(
     createdBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
     description: { type: String, required: false },
     salary: {
-      type: [Number], // Array of numbers to support ranges
+      type: Schema.Types.Mixed, // Allows both number and array
       validate: {
-        validator: (value: number | [number, number]) => {
+        validator: function (value: any) {
+          if (!value) return true; // Allow undefined/null
+          if (typeof value === "number") return value >= 0;
           if (Array.isArray(value)) {
-            return value.length === 2 && value[0] <= value[1];
+            return (
+              value.length === 2 &&
+              typeof value[0] === "number" &&
+              typeof value[1] === "number" &&
+              value[0] >= 0 &&
+              value[1] >= 0 &&
+              value[0] <= value[1]
+            );
           }
-          return true;
+          return false;
         },
         message:
-          "Salary range must be an array of two numbers where the first is less than or equal to the second.",
+          "Salary must be a positive number or an array of two positive numbers [min, max] where min <= max",
       },
       required: false,
-      min: 0,
     },
     experienceLevel: {
       type: String,
