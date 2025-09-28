@@ -76,13 +76,15 @@ const JobDetail = () => {
         Application Link: <a href={job.applicationLink}>{job.applicationLink}</a>
       </p>
       <p>
-        Deadline:{' '}
-        {job.deadline?.toLocaleDateString('en-US', {
-          weekday: 'long',
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric',
-        })}
+        Deadline:
+        {job.deadline
+          ? new Date(job.deadline).toLocaleDateString('en-US', {
+              weekday: 'long',
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+            })
+          : 'No deadline'}
       </p>
       <p>Priority: {job.priority}</p>
       <p>Source: {job.source}</p>
