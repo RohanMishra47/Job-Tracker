@@ -33,8 +33,7 @@ type Job = {
   isFavorite: boolean;
 };
 
-const initialFormData: Job = {
-  _id: '',
+const initialFormData = {
   company: '',
   position: '',
   status: '',
