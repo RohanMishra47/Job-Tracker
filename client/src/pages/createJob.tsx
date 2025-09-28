@@ -33,12 +33,29 @@ type Job = {
   isFavorite: boolean;
 };
 
-const initialFormData = { company: '', position: '', status: '', jobType: '', location: '' };
+const initialFormData: Job = {
+  _id: '',
+  company: '',
+  position: '',
+  status: '',
+  jobType: '',
+  location: '',
+  description: '',
+  salary: 0 as number | [number, number],
+  experienceLevel: 'junior',
+  tags: [] as string[],
+  applicationLink: '',
+  deadline: new Date(),
+  priority: 'medium' as 'low' | 'medium' | 'high' | number,
+  source: 'other' as 'LinkedIn' | 'Referral' | 'Company Site' | 'other' | string,
+  notes: '',
+  isFavorite: false,
+};
 
 const CreateJob = () => {
   const [formData, setFormData] = useState(initialFormData);
   const [isRange, setIsRange] = useState(false);
-  const [salary, setSalary] = useState<number | [number, number] | undefined>();
+  // const [salary, setSalary] = useState<number | [number, number] | undefined>();
   const [jobs, setJobs] = useState<Job[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -77,6 +94,42 @@ const CreateJob = () => {
     setErrorMessages((prev) => prev.filter((issue) => issue.path[0] !== name));
     debouncedValidate(updatedForm);
   };
+
+  const handleSalaryInputChange =
+    (field: 'single' | 'min' | 'max') => (e: React.ChangeEvent<HTMLInputElement>) => {
+      const { value } = e.target;
+      const parsedValue = value === '' ? 0 : Number(value); // Default to 0 instead of undefined
+      const isValidNumber = !isNaN(parsedValue);
+
+      let newSalary: number | [number, number] = 0; // Default to 0
+
+      if (field === 'single' && isValidNumber) {
+        newSalary = parsedValue;
+      } else if (field === 'min' || field === 'max') {
+        const currentMin = Array.isArray(formData.salary) ? formData.salary[0] : 0;
+        const currentMax = Array.isArray(formData.salary) ? formData.salary[1] : 0;
+
+        if (field === 'min' && isValidNumber) {
+          newSalary = [parsedValue, currentMax];
+        } else if (field === 'max' && isValidNumber) {
+          newSalary = [currentMin, parsedValue];
+        }
+      }
+
+      // Update formData with new salary value
+      const updatedForm = {
+        ...formData,
+        salary: newSalary,
+      };
+
+      setFormData(updatedForm);
+
+      // Clear any previous Zod errors related to 'salary' field
+      setErrorMessages((prev) => prev.filter((issue) => issue.path[0] !== 'salary'));
+
+      // Trigger debounced validation
+      debouncedValidate(updatedForm);
+    };
 
   const handleDropdownChange = (field: 'status' | 'jobType', value: string) => {
     const updatedForm = { ...formData, [field]: value };
@@ -328,7 +381,6 @@ const CreateJob = () => {
               checked={isRange}
               onChange={() => {
                 setIsRange(!isRange);
-                setSalary(undefined);
               }}
             />
             Salary as Range
@@ -336,28 +388,14 @@ const CreateJob = () => {
 
           {isRange ? (
             <div>
-              <input
-                type="number"
-                placeholder="Min"
-                onChange={(e) => {
-                  const min = Number(e.target.value);
-                  setSalary([min, (salary as [number, number])?.[1] ?? 0]);
-                }}
-              />
-              <input
-                type="number"
-                placeholder="Max"
-                onChange={(e) => {
-                  const max = Number(e.target.value);
-                  setSalary([(salary as [number, number])?.[0] ?? 0, max]);
-                }}
-              />
+              <input type="number" placeholder="Min" onChange={handleSalaryInputChange('min')} />
+              <input type="number" placeholder="Max" onChange={handleSalaryInputChange('max')} />
             </div>
           ) : (
             <input
               type="number"
               placeholder="Salary"
-              onChange={(e) => setSalary(Number(e.target.value))}
+              onChange={handleSalaryInputChange('single')}
             />
           )}
         </div>

@@ -49,7 +49,7 @@ const EditJob = () => {
   const fetchJobs = async () => {
     try {
       const response = await api.get('/jobs');
-      const jobList: Job[] = response.data ?? [];
+      const jobList: Job[] = Array.isArray(response.data) ? response.data : [];
       SetExistingJobs(jobList);
       const grouped: JobMap = allStatuses.reduce((acc, status) => {
         acc[status] = [];
