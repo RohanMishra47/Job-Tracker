@@ -13,9 +13,26 @@ import jobRoutes from "./routes/jobRoutes";
 const app: Application = express();
 
 app.use(cookieParser());
+
+const allowedOrigins = [
+  "https://job-tracker-2ub.pages.dev",
+  /^https:\/\/.*\.job-tracker-2ub\.pages\.dev$/, // previews for your project only
+];
+
 app.use(
   cors({
-    origin: "job-tracker-2ub.pages.dev", // Your frontend URL
+    origin: (origin, callback) => {
+      if (
+        !origin ||
+        allowedOrigins.some((o) =>
+          o instanceof RegExp ? o.test(origin) : o === origin
+        )
+      ) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    }, // Your frontend URL
     credentials: true, // Allow cookies to be sent
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
