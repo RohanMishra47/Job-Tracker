@@ -17,7 +17,7 @@ type Job = {
   applicationLink: string;
   deadline: Date;
   priority: 'low' | 'medium' | 'high' | number;
-  source: 'LinkedIn' | 'Referral' | 'Company Site' | 'ohter' | 'other' | string;
+  source: 'LinkedIn' | 'Referral' | 'Company Site' | 'other' | string;
   notes: string;
   isFavorite: boolean;
 };

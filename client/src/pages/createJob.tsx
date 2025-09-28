@@ -13,7 +13,6 @@ import axios from 'axios';
 import { ChevronDown } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react';
 import { z } from 'zod'; // Standard Zod import for v4
-// import { useNavigate } from 'react-router-dom'; // Uncomment if you want redirect
 
 type Job = {
   _id: string;
@@ -22,12 +21,24 @@ type Job = {
   status: string;
   jobType: string;
   location: string;
+  description: string;
+  salary: number | [number, number];
+  experienceLevel: 'junior' | 'mid' | 'senior';
+  tags: string[];
+  applicationLink: string;
+  deadline: Date;
+  priority: 'low' | 'medium' | 'high' | number;
+  source: 'LinkedIn' | 'Referral' | 'Company Site' | 'other' | string;
+  notes: string;
+  isFavorite: boolean;
 };
 
 const initialFormData = { company: '', position: '', status: '', jobType: '', location: '' };
 
 const CreateJob = () => {
   const [formData, setFormData] = useState(initialFormData);
+  const [isRange, setIsRange] = useState(false);
+  const [salary, setSalary] = useState<number | [number, number] | undefined>();
   const [jobs, setJobs] = useState<Job[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -308,6 +319,47 @@ const CreateJob = () => {
                 {issue.message}
               </p>
             ))}
+        </div>
+
+        <div>
+          <label>
+            <input
+              type="checkbox"
+              checked={isRange}
+              onChange={() => {
+                setIsRange(!isRange);
+                setSalary(undefined);
+              }}
+            />
+            Salary as Range
+          </label>
+
+          {isRange ? (
+            <div>
+              <input
+                type="number"
+                placeholder="Min"
+                onChange={(e) => {
+                  const min = Number(e.target.value);
+                  setSalary([min, (salary as [number, number])?.[1] ?? 0]);
+                }}
+              />
+              <input
+                type="number"
+                placeholder="Max"
+                onChange={(e) => {
+                  const max = Number(e.target.value);
+                  setSalary([(salary as [number, number])?.[0] ?? 0, max]);
+                }}
+              />
+            </div>
+          ) : (
+            <input
+              type="number"
+              placeholder="Salary"
+              onChange={(e) => setSalary(Number(e.target.value))}
+            />
+          )}
         </div>
 
         {error && <p className="text-sm text-red-500">{error}</p>}
