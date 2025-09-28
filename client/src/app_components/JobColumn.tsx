@@ -10,6 +10,16 @@ type Job = {
   status: string;
   jobType: string;
   location: string;
+  description: string;
+  salary: number | [number, number];
+  experienceLevel: 'junion' | 'mid' | 'senior';
+  tags: string[];
+  applicationLink: string;
+  deadline: Date;
+  priority: 'low' | 'medium' | 'high' | number;
+  source: 'LinkedIn' | 'Referral' | 'Company Site' | 'ohter' | 'other' | string;
+  notes: string;
+  isFavorite: boolean;
 };
 
 type Props = {
