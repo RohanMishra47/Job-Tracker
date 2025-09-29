@@ -65,7 +65,7 @@ const initialFormData: CreateJobFormData = {
   tags: [],
   applicationLink: '',
   deadline: new Date(),
-  priority: 'medium', // Remove type assertion
+  priority: 'medium',
   source: 'other',
   notes: '',
   isFavorite: false,
@@ -74,11 +74,11 @@ const initialFormData: CreateJobFormData = {
 const CreateJob = () => {
   const [formData, setFormData] = useState<CreateJobFormData>(initialFormData);
   const [isRange, setIsRange] = useState(false);
-  // const [salary, setSalary] = useState<number | [number, number] | undefined>();
+  const [tag, setTag] = useState(''); // Current input text
+  const [tags, setTags] = useState<string[]>([]); // Array of added tags
   const [jobs, setJobs] = useState<Job[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
-  // Standard type for v4: ZodIssue[]
   const [errorMessages, setErrorMessages] = useState<z.ZodIssue[]>([]);
   const [isValid, setIsValid] = useState(false);
 
@@ -149,6 +149,24 @@ const CreateJob = () => {
       // Trigger debounced validation
       debouncedValidate(updatedForm);
     };
+
+  // New helper for keydown events
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    // Add tag helper
+    const addTag = () => {
+      if (tag.trim()) {
+        setTags([...tags, tag.trim()]);
+        setTag('');
+      }
+    };
+    if (e.key === 'Enter') {
+      e.preventDefault(); // Prevent form submission/page refresh
+      addTag();
+    }
+
+    const updatedForm = { ...formData, tags: tags };
+    setFormData(updatedForm);
+  };
 
   const handleDropdownChange = (field: 'status' | 'jobType', value: string) => {
     const updatedForm = { ...formData, [field]: value };
@@ -417,6 +435,31 @@ const CreateJob = () => {
               onChange={handleSalaryInputChange('single')}
             />
           )}
+
+          {safeErrorMessages
+            .filter((issue) => issue.path[0] === 'company')
+            .map((issue, index) => (
+              <p key={index} className="text-sm text-red-500 mt-1">
+                {issue.message}
+              </p>
+            ))}
+        </div>
+
+        <div>
+          <input
+            type="text"
+            placeholder="Add a tag"
+            value={tag}
+            onChange={(e) => setTag(e.target.value)}
+            onKeyDown={handleKeyDown} // Replaced with helper
+          />
+          <div>
+            {tags.map((t, i) => (
+              <span key={i}>
+                {t} <button onClick={() => setTags(tags.filter((_, idx) => idx !== i))}>x</button>
+              </span>
+            ))}
+          </div>
         </div>
 
         {error && <p className="text-sm text-red-500">{error}</p>}
