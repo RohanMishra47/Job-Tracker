@@ -2,39 +2,52 @@ import { jobSchema } from '@/schemas/jobSchema';
 // import { z } from 'zod'; // Standard import
 import type { ZodIssue } from 'zod'; // Public type (drop $ZodIssue)
 
-type Job = {
-  company: string;
-  position: string;
-  status: string;
-  jobType: string;
-  location: string;
-};
+// type Job = {
+//   _id: string;
+//   company: string;
+//   position: string;
+//   status: string;
+//   jobType: string;
+//   location: string;
+//   description: string;
+//   salary: number | [number, number];
+//   experienceLevel: 'junior' | 'mid' | 'senior';
+//   tags: string[];
+//   applicationLink: string;
+//   deadline: Date;
+//   priority: 'low' | 'medium' | 'high' | number;
+//   source: 'LinkedIn' | 'Referral' | 'Company Site' | 'other' | string;
+//   notes: string;
+//   isFavorite: boolean;
+// };
 
-// Fixed typing: Expects single Job, not Job[]
-export function debounce<T extends (formData: Job) => void>(fn: T, delay: number) {
+// Simplified debounce that accepts a single parameter function
+export function debounce<T>(fn: (arg: T) => void, delay: number) {
   let timer: ReturnType<typeof setTimeout>;
-  return (formData: Job) => {
-    // Single arg
+  return (arg: T) => {
     clearTimeout(timer);
-    timer = setTimeout(() => fn(formData), delay);
+    timer = setTimeout(() => fn(arg), delay);
   };
 }
 
-// Updated: Use safeParse (no throw/catch needed)
+// Change validateForm to accept unknown data
 export const validateForm = (
-  formData: Job,
+  formData: Record<string, unknown>, // Changed from any to Record<string, unknown>
   setIsValid: (v: boolean) => void,
-  setErrorMessages: (e: ZodIssue[]) => void // Standard type
+  setErrorMessages: (e: ZodIssue[]) => void
 ) => {
   const parseResult = jobSchema.safeParse(formData);
   setIsValid(parseResult.success);
-  setErrorMessages(parseResult.success ? [] : parseResult.error?.issues || []); // Safe array
+  setErrorMessages(parseResult.success ? [] : parseResult.error?.issues || []);
 };
 
-// Create debounced version (500ms delay for better UX)
+// createDebouncedValidate now accepts Record<string, unknown>
 export const createDebouncedValidate = (
   setIsValid: (v: boolean) => void,
   setErrorMessages: (e: ZodIssue[]) => void
 ) => {
-  return debounce((formData) => validateForm(formData, setIsValid, setErrorMessages), 500);
+  return debounce(
+    (formData: Record<string, unknown>) => validateForm(formData, setIsValid, setErrorMessages),
+    500
+  );
 };

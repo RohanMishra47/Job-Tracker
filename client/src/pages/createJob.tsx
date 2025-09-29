@@ -14,6 +14,7 @@ import { ChevronDown } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react';
 import { z } from 'zod'; // Standard Zod import for v4
 
+// For API responses (strict types)
 type Job = {
   _id: string;
   company: string;
@@ -33,26 +34,45 @@ type Job = {
   isFavorite: boolean;
 };
 
-const initialFormData = {
+// For form inputs (more flexible)
+type CreateJobFormData = {
+  company: string;
+  position: string;
+  status: string;
+  jobType: string;
+  location: string;
+  description?: string;
+  salary?: number | [number, number];
+  experienceLevel?: string;
+  tags?: string[];
+  applicationLink?: string;
+  deadline?: Date;
+  priority?: string;
+  source?: string;
+  notes?: string;
+  isFavorite?: boolean;
+};
+
+const initialFormData: CreateJobFormData = {
   company: '',
   position: '',
   status: '',
   jobType: '',
   location: '',
   description: '',
-  salary: 0 as number | [number, number],
+  salary: 0,
   experienceLevel: 'junior',
-  tags: [] as string[],
+  tags: [],
   applicationLink: '',
   deadline: new Date(),
-  priority: 'medium' as 'low' | 'medium' | 'high' | number,
-  source: 'other' as 'LinkedIn' | 'Referral' | 'Company Site' | 'other' | string,
+  priority: 'medium', // Remove type assertion
+  source: 'other',
   notes: '',
   isFavorite: false,
 };
 
 const CreateJob = () => {
-  const [formData, setFormData] = useState(initialFormData);
+  const [formData, setFormData] = useState<CreateJobFormData>(initialFormData);
   const [isRange, setIsRange] = useState(false);
   // const [salary, setSalary] = useState<number | [number, number] | undefined>();
   const [jobs, setJobs] = useState<Job[]>([]);
