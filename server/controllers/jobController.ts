@@ -52,7 +52,7 @@ const validateRequest = (req: RequestWithUser, res: Response) => {
   }
   return null;
 };
-
+// POST /api/jobs/seed
 export const seedJobs = async (req: RequestWithUser, res: Response) => {
   console.log("🌱 Seeding endpoint hit!");
   console.log("🔐 User ID:", req.user?.id);
