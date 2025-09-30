@@ -81,7 +81,7 @@ export const jobValidators = [
 
   // Application link: optional URL
   body("applicationLink")
-    .optional()
+    .optional({ nullable: true, checkFalsy: true })
     .isURL()
     .withMessage("Application link must be a valid URL"),
 

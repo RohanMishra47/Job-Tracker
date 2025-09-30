@@ -78,7 +78,24 @@ const jobSchema = new Schema<IJob>(
       required: false,
     },
     tags: { type: [String], required: false },
-    applicationLink: { type: String, required: false },
+    applicationLink: {
+      type: String,
+      required: false,
+      validate: {
+        validator: function (value: string) {
+          // Allow empty string, null, or undefined
+          if (!value) return true;
+          // Validate URL format if value exists
+          try {
+            new URL(value);
+            return true;
+          } catch {
+            return false;
+          }
+        },
+        message: (props) => `${props.value} is not a valid URL!`,
+      },
+    },
     deadline: { type: Date, required: false },
     priority: {
       type: String,
