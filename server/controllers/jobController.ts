@@ -1,6 +1,57 @@
 import { Response } from "express";
+import { validationResult } from "express-validator";
+import mongoose from "mongoose";
 import { RequestWithUser } from "../interfaces/reqInterfaces";
 import { Job } from "../models/Job";
+
+// Helper function for consistent error responses
+const handleControllerError = (
+  res: Response,
+  error: unknown,
+  context: string,
+  defaultMessage = "An error occurred"
+) => {
+  console.error(`[${context}] Error:`, error);
+
+  if (error instanceof mongoose.Error.ValidationError) {
+    return res.status(400).json({
+      error: "Validation failed",
+      details: Object.values(error.errors).map((err) => err.message),
+      context,
+    });
+  }
+
+  if (error instanceof mongoose.Error.CastError) {
+    return res.status(400).json({
+      error: "Invalid ID format",
+      context,
+    });
+  }
+
+  if (error instanceof Error) {
+    return res.status(500).json({
+      error: error.message || defaultMessage,
+      context,
+    });
+  }
+
+  return res.status(500).json({
+    error: defaultMessage,
+    context,
+  });
+};
+
+// Helper function to validate request
+const validateRequest = (req: RequestWithUser, res: Response) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({
+      error: "Validation failed",
+      details: errors.array(),
+    });
+  }
+  return null;
+};
 
 export const seedJobs = async (req: RequestWithUser, res: Response) => {
   console.log("🌱 Seeding endpoint hit!");
@@ -11,39 +62,36 @@ export const seedJobs = async (req: RequestWithUser, res: Response) => {
 
     if (!createdBy) {
       console.log("❌ No user ID found");
-      return res.status(400).json({ error: "User not authenticated" });
+      return res.status(401).json({
+        error: "Authentication required",
+        details: "User not authenticated or session expired",
+      });
     }
 
     console.log("🗑️ Clearing existing test jobs...");
-    // Clear existing test jobs first (optional)
-    await Job.deleteMany({ company: /^Company \d+$/ });
-    console.log("✅ Test jobs cleared");
+    const deleteResult = await Job.deleteMany({ company: /^Company \d+$/ });
+    console.log(`✅ Cleared ${deleteResult.deletedCount} test jobs`);
 
     console.log("📝 Creating seed data...");
-    const seedJobs = [];
-    for (let i = 1; i <= 30; i++) {
-      seedJobs.push({
-        company: `Company ${i}`,
-        position: `Test Job ${i}`,
-        status:
-          i % 3 === 0 ? "interviewing" : i % 3 === 1 ? "declined" : "pending",
-        jobType: i % 2 === 0 ? "full-time" : "part-time",
-        location: `Location ${i}`,
-        createdBy,
-        // Added new fields from IJob interface
-        description: i % 2 === 0 ? `Job description ${i}` : undefined,
-        salary: i % 2 === 0 ? [10000, 20000] : undefined,
-        experienceLevel: i % 2 === 0 ? "senior" : "junior",
-        tags: i % 2 === 0 ? ["Node.js", "Express.js"] : ["React", "Redux"],
-        applicationLink:
-          i % 2 === 0 ? `https://example.com/job/${i}` : undefined,
-        deadline: i % 2 === 0 ? new Date("2024-03-15") : undefined,
-        priority: i % 2 === 0 ? "high" : "medium",
-        source: i % 2 === 0 ? "LinkedIn" : "Company Site",
-        notes: i % 2 === 0 ? `This is a test job ${i}` : undefined,
-        isFavorite: i === 15 || i === 30,
-      });
-    }
+    const seedJobs = Array.from({ length: 30 }, (_, i) => i + 1).map((i) => ({
+      company: `Company ${i}`,
+      position: `Test Job ${i}`,
+      status:
+        i % 3 === 0 ? "interviewing" : i % 3 === 1 ? "declined" : "pending",
+      jobType: i % 2 === 0 ? "full-time" : "part-time",
+      location: `Location ${i}`,
+      createdBy,
+      description: i % 2 === 0 ? `Job description ${i}` : undefined,
+      salary: i % 2 === 0 ? [10000, 20000] : undefined,
+      experienceLevel: i % 2 === 0 ? "senior" : "junior",
+      tags: i % 2 === 0 ? ["Node.js", "Express.js"] : ["React", "Redux"],
+      applicationLink: i % 2 === 0 ? `https://example.com/job/${i}` : undefined,
+      deadline: i % 2 === 0 ? new Date("2024-03-15") : undefined,
+      priority: i % 2 === 0 ? "high" : "medium",
+      source: i % 2 === 0 ? "LinkedIn" : "Company Site",
+      notes: i % 2 === 0 ? `This is a test job ${i}` : undefined,
+      isFavorite: i === 15 || i === 30,
+    }));
 
     console.log("💾 Inserting jobs into database...");
     const result = await Job.insertMany(seedJobs);
@@ -54,130 +102,239 @@ export const seedJobs = async (req: RequestWithUser, res: Response) => {
       jobsCreated: result.length,
     });
   } catch (error) {
-    console.error("❌ Detailed seeding error:", error);
-    if (error && typeof error === "object") {
-      console.error("Error name:", (error as { name?: string }).name);
-      console.error("Error message:", (error as { message?: string }).message);
-      console.error("Error stack:", (error as { stack?: string }).stack);
-      res.status(500).json({
-        error: "Seeding failed",
-        details: (error as { message?: string }).message,
-        name: (error as { name?: string }).name,
-      });
-    } else {
-      res
-        .status(500)
-        .json({ error: "Seeding failed", details: "Unknown error" });
-    }
+    handleControllerError(res, error, "seedJobs", "Failed to seed jobs");
   }
 };
 
 // POST /api/jobs
 export const createJob = async (req: RequestWithUser, res: Response) => {
-  const { company, position, status, jobType, location } = req.body;
-  const createdBy = req.user?.id; // Changed from _id to id
-
   try {
-    const job = await Job.create({
+    // Validate request first
+    const validationError = validateRequest(req, res);
+    if (validationError) return validationError;
+
+    const { company, position, status, jobType, location } = req.body;
+    const createdBy = req.user?.id;
+
+    if (!createdBy) {
+      return res.status(401).json({
+        error: "Authentication required",
+        details: "User not authenticated",
+      });
+    }
+
+    // Create job with all possible fields from request body
+    const jobData = {
       company,
       position,
       status,
       jobType,
       location,
       createdBy,
-    });
+      ...req.body, // Include all other fields from request
+    };
+
+    const job = await Job.create(jobData);
+    console.log("Job created:", job._id);
+
     res.status(201).json(job);
-  } catch (err) {
-    if (err instanceof Error) {
-      console.error(err.message);
-      res.status(500).json({ error: err.message });
-    } else {
-      console.error("Unknown error", err);
-      res.status(500).json({ error: "An unknown error occurred." });
-    }
+  } catch (error) {
+    handleControllerError(res, error, "createJob", "Failed to create job");
   }
 };
 
 // GET /api/jobs
 export const getJobs = async (req: RequestWithUser, res: Response) => {
-  const userId = req.user?.id; // Using _id instead of id
-  const { search, status, type, sortBy = "newest" } = req.query;
-  const page = parseInt(req.query.page as string) || 1;
-  const limit = parseInt(req.query.limit as string) || 10;
-  const skip = (page - 1) * limit;
+  try {
+    const userId = req.user?.id;
 
-  const query: Record<string, any> = {};
+    if (!userId) {
+      return res.status(401).json({
+        error: "Authentication required",
+        details: "User not authenticated",
+      });
+    }
 
-  if (search) {
-    query.position = { $regex: search, $options: "i" }; // case-insensitive search
+    const { search, status, type, sortBy = "newest" } = req.query;
+    const page = Math.max(1, parseInt(req.query.page as string) || 1);
+    const limit = Math.min(100, parseInt(req.query.limit as string) || 10);
+    const skip = (page - 1) * limit;
+
+    const query: Record<string, any> = { createdBy: userId };
+
+    if (search) {
+      query.$or = [
+        { company: { $regex: search, $options: "i" } },
+        { position: { $regex: search, $options: "i" } },
+        { location: { $regex: search, $options: "i" } },
+      ];
+    }
+
+    if (status) {
+      const statusArray = Array.isArray(status)
+        ? status
+        : typeof status === "string"
+        ? status.split(",").filter(Boolean)
+        : [];
+      if (statusArray.length > 0) {
+        query.status = { $in: statusArray };
+      }
+    }
+
+    if (type) {
+      const typeArray = Array.isArray(type)
+        ? type
+        : typeof type === "string"
+        ? type.split(",").filter(Boolean)
+        : [];
+      if (typeArray.length > 0) {
+        query.jobType = { $in: typeArray };
+      }
+    }
+
+    const sortDirection = sortBy === "oldest" ? 1 : -1;
+
+    const [jobs, totalJobs] = await Promise.all([
+      Job.find(query)
+        .sort({ createdAt: sortDirection })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      Job.countDocuments(query),
+    ]);
+
+    res.json({
+      jobs,
+      totalJobs,
+      page,
+      totalPages: Math.ceil(totalJobs / limit),
+      hasMore: skip + jobs.length < totalJobs,
+    });
+  } catch (error) {
+    handleControllerError(res, error, "getJobs", "Failed to fetch jobs");
   }
-
-  if (status) {
-    const statusArray = Array.isArray(status)
-      ? status
-      : typeof status === "string"
-      ? status.split(",").filter(Boolean)
-      : [];
-    query.status = { $in: statusArray };
-  }
-
-  if (type) {
-    const typeArray = Array.isArray(type)
-      ? type
-      : typeof type === "string"
-      ? type.split(",").filter(Boolean)
-      : [];
-    query.jobType = { $in: typeArray };
-  }
-
-  const sortDirection = req.query.sortBy === "oldest" ? 1 : -1;
-
-  const combinedQuery = { createdBy: userId, ...query };
-  const jobs = await Job.find(combinedQuery)
-    .sort({ _id: sortDirection })
-    .skip(skip)
-    .limit(limit);
-
-  const totalJobs = await Job.countDocuments(query);
-  res.json({
-    jobs,
-    totalJobs,
-    page,
-    totalPages: Math.ceil(totalJobs / limit),
-  });
 };
+
 export const getFullJob = async (req: RequestWithUser, res: Response) => {
   try {
-    const job = await Job.findById(req.params.id);
-    if (!job) return res.status(404).json({ message: "Job not found" });
+    const { id } = req.params;
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return res.status(401).json({
+        error: "Authentication required",
+        details: "User not authenticated",
+      });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        error: "Invalid job ID format",
+      });
+    }
+
+    const job = await Job.findOne({ _id: id, createdBy: userId });
+
+    if (!job) {
+      return res.status(404).json({
+        error: "Job not found",
+        details:
+          "The requested job doesn't exist or you don't have permission to view it",
+      });
+    }
+
     res.json(job);
   } catch (error) {
-    res.status(500).json({ message: "Server error" });
+    handleControllerError(
+      res,
+      error,
+      "getFullJob",
+      "Failed to fetch job details"
+    );
   }
 };
 
 // PUT /api/jobs/:id
 export const updateJob = async (req: RequestWithUser, res: Response) => {
-  const { id } = req.params;
-  const userId = req.user?.id; // Using _id instead of id
+  try {
+    const { id } = req.params;
+    const userId = req.user?.id;
 
-  const job = await Job.findOneAndUpdate(
-    { _id: id, createdBy: userId },
-    req.body,
-    { new: true }
-  );
+    if (!userId) {
+      return res.status(401).json({
+        error: "Authentication required",
+        details: "User not authenticated",
+      });
+    }
 
-  if (!job) return res.status(404).json({ error: "Job not found" });
-  res.json(job);
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        error: "Invalid job ID format",
+      });
+    }
+
+    // Validate request first
+    const validationError = validateRequest(req, res);
+    if (validationError) return validationError;
+
+    const job = await Job.findOneAndUpdate(
+      { _id: id, createdBy: userId },
+      req.body,
+      {
+        new: true,
+        runValidators: true,
+        context: "update",
+      }
+    );
+
+    if (!job) {
+      return res.status(404).json({
+        error: "Job not found",
+        details:
+          "The requested job doesn't exist or you don't have permission to update it",
+      });
+    }
+
+    res.json(job);
+  } catch (error) {
+    handleControllerError(res, error, "updateJob", "Failed to update job");
+  }
 };
 
 // DELETE /api/jobs/:id
 export const deleteJob = async (req: RequestWithUser, res: Response) => {
-  const { id } = req.params;
-  const userId = req.user?.id; // Using _id instead of id
+  try {
+    const { id } = req.params;
+    const userId = req.user?.id;
 
-  const job = await Job.findOneAndDelete({ _id: id, createdBy: userId });
-  if (!job) return res.status(404).json({ error: "Job not found" });
+    if (!userId) {
+      return res.status(401).json({
+        error: "Authentication required",
+        details: "User not authenticated",
+      });
+    }
 
-  res.json({ message: "Job deleted" });
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        error: "Invalid job ID format",
+      });
+    }
+
+    const job = await Job.findOneAndDelete({ _id: id, createdBy: userId });
+
+    if (!job) {
+      return res.status(404).json({
+        error: "Job not found",
+        details:
+          "The requested job doesn't exist or you don't have permission to delete it",
+      });
+    }
+
+    res.json({
+      message: "Job deleted successfully",
+      deletedJobId: id,
+    });
+  } catch (error) {
+    handleControllerError(res, error, "deleteJob", "Failed to delete job");
+  }
 };

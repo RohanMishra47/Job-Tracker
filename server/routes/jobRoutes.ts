@@ -9,14 +9,19 @@ import {
 } from "../controllers/jobController";
 import { protect } from "../middleware/authMiddleware";
 import { Job } from "../models/Job";
+import { jobValidators } from "./routesValidation/jobValidators";
 
 const router = express.Router();
 
 router.use(protect);
 
 router.post("/seed", seedJobs);
-router.route("/").get(getJobs).post(createJob);
-router.route("/:id").get(getFullJob).put(updateJob).delete(deleteJob);
+router.route("/").get(getJobs).post(jobValidators, createJob);
+router
+  .route("/:id")
+  .get(getFullJob)
+  .put(jobValidators, updateJob)
+  .delete(deleteJob);
 
 router.put("/:id/status", async (req, res) => {
   try {
