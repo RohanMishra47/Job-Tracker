@@ -114,58 +114,50 @@ const CreateJob = () => {
     debouncedValidate(updatedForm);
   };
 
+  // Modify your handleSalaryInputChange to ensure proper updates
   const handleSalaryInputChange =
     (field: 'single' | 'min' | 'max') => (e: React.ChangeEvent<HTMLInputElement>) => {
       const { value } = e.target;
-      const parsedValue = value === '' ? 0 : Number(value); // Default to 0 instead of undefined
-      const isValidNumber = !isNaN(parsedValue);
+      const parsedValue = value === '' ? undefined : Number(value);
+      const isValidNumber = parsedValue !== undefined && !isNaN(parsedValue);
 
-      let newSalary: number | [number, number] = 0; // Default to 0
+      let newSalary: number | [number, number] | undefined;
 
-      if (field === 'single' && isValidNumber) {
-        newSalary = parsedValue;
-      } else if (field === 'min' || field === 'max') {
-        const currentMin = Array.isArray(formData.salary) ? formData.salary[0] : 0;
-        const currentMax = Array.isArray(formData.salary) ? formData.salary[1] : 0;
+      if (field === 'single') {
+        newSalary = isValidNumber ? parsedValue : undefined;
+      } else {
+        const currentSalary = formData.salary;
+        const currentMin = Array.isArray(currentSalary) ? currentSalary[0] : 0;
+        const currentMax = Array.isArray(currentSalary) ? currentSalary[1] : 0;
 
-        if (field === 'min' && isValidNumber) {
-          newSalary = [parsedValue, currentMax];
-        } else if (field === 'max' && isValidNumber) {
-          newSalary = [currentMin, parsedValue];
+        if (field === 'min') {
+          newSalary = isValidNumber ? [parsedValue, currentMax] : [0, currentMax];
+        } else if (field === 'max') {
+          newSalary = isValidNumber ? [currentMin, parsedValue] : [currentMin, 0];
         }
       }
 
-      // Update formData with new salary value
-      const updatedForm = {
-        ...formData,
-        salary: newSalary,
-      };
-
-      setFormData(updatedForm);
-
-      // Clear any previous Zod errors related to 'salary' field
-      setErrorMessages((prev) => prev.filter((issue) => issue.path[0] !== 'salary'));
-
-      // Trigger debounced validation
-      debouncedValidate(updatedForm);
+      // Only update if we have valid values
+      if (newSalary !== undefined) {
+        const updatedForm = { ...formData, salary: newSalary };
+        setFormData(updatedForm);
+        debouncedValidate(updatedForm);
+      }
     };
 
   // New helper for keydown events
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    // Add tag helper
-    const addTag = () => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
       if (tag.trim()) {
-        setTags([...tags, tag.trim()]);
+        const newTags = [...(formData.tags ?? []), tag.trim()];
+        setFormData((prev) => ({
+          ...prev,
+          tags: newTags,
+        }));
         setTag('');
       }
-    };
-    if (e.key === 'Enter') {
-      e.preventDefault(); // Prevent form submission/page refresh
-      addTag();
     }
-
-    const updatedForm = { ...formData, tags: tags };
-    setFormData(updatedForm);
   };
 
   const handleDropdownChange = (field: 'status' | 'jobType', value: string) => {
@@ -182,7 +174,7 @@ const CreateJob = () => {
     setIsSubmitting(true);
 
     console.log('Submit started with formData:', formData); // Your confirmed log
-
+    console.log(formData.tags);
     // Validation: Use safeParse directly (no throw/catch for Zod)
     console.log('Running validation...'); // Debug
     const parseResult = jobSchema.safeParse(formData);
@@ -437,7 +429,7 @@ const CreateJob = () => {
           )}
 
           {safeErrorMessages
-            .filter((issue) => issue.path[0] === 'company')
+            .filter((issue) => issue.path[0] === 'salary')
             .map((issue, index) => (
               <p key={index} className="text-sm text-red-500 mt-1">
                 {issue.message}
