@@ -12,7 +12,7 @@ import { createDebouncedValidate } from '@/utils/validation';
 import axios from 'axios';
 import { ChevronDown } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react';
-import { z } from 'zod'; // Standard Zod import for v4
+import { z } from 'zod';
 
 // For API responses (strict types)
 type Job = {
