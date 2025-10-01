@@ -41,8 +41,10 @@ export const jobValidators = [
 
   body("source")
     .optional()
-    .isIn(["LinkedIn", "Referral", "Company Site", "other"])
-    .withMessage("Invalid source"),
+    .isString()
+    .trim()
+    .notEmpty()
+    .withMessage("Source must be a non-empty string"),
 
   // Salary: number or [min, max]
   body("salary")

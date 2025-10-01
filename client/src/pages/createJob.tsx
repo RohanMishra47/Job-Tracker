@@ -537,7 +537,7 @@ const CreateJob = () => {
                 formData.source === 'Referral' ||
                 formData.source === 'Company Site'
                   ? formData.source
-                  : formData.source === 'other'
+                  : formData.source && formData.source !== ''
                     ? 'Other'
                     : 'Select Source'}
                 <ChevronDown className="ml-2 h-4 w-4 opacity-50" />
@@ -556,14 +556,18 @@ const CreateJob = () => {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {formData.source === 'other' && (
-            <input
-              type="text"
-              placeholder="Specify source"
-              onChange={(e) => handleDropdownChange('source', e.target.value)}
-              className="mt-2 w-full rounded-md border border-gray-300 px-4 py-2 focus:ring-indigo-500 focus:border-indigo-500"
-            />
-          )}
+          {formData.source &&
+            formData.source !== 'LinkedIn' &&
+            formData.source !== 'Referral' &&
+            formData.source !== 'Company Site' && (
+              <input
+                type="text"
+                placeholder="Specify source"
+                value={formData.source === 'other' ? '' : formData.source}
+                onChange={(e) => handleDropdownChange('source', e.target.value)}
+                className="mt-2 w-full rounded-md border border-gray-300 px-4 py-2 focus:ring-indigo-500 focus:border-indigo-500"
+              />
+            )}
 
           {safeErrorMessages
             .filter((issue) => issue.path[0] === 'source')
