@@ -16,7 +16,9 @@ app.use(cookieParser());
 
 const allowedOrigins = [
   "https://job-tracker-2ub.pages.dev",
-  /^https:\/\/.*\.job-tracker-2ub\.pages\.dev$/, // previews for your project only
+  "https://job-tracker-dev.pages.dev",
+  /^https:\/\/.*\.job-tracker-2ub\.pages\.dev$/, // previews for production
+  /^https:\/\/.*\.job-tracker-dev\.pages\.dev$/, // previews for development
 ];
 
 app.use(
