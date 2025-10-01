@@ -437,6 +437,41 @@ const CreateJob = () => {
             ))}
         </div>
 
+        {/* New Deadline field (placed below Salary) */}
+        <div className="mt-4">
+          <label htmlFor="deadline" className="block text-sm font-medium text-gray-700 mb-1">
+            Deadline
+          </label>
+          <input
+            id="deadline"
+            name="deadline"
+            type="date"
+            value={formData.deadline ? new Date(formData.deadline).toISOString().slice(0, 10) : ''}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+              const { value } = e.target;
+              const deadlineValue = value ? new Date(value) : undefined;
+              const updatedForm = { ...formData, deadline: deadlineValue };
+              setFormData(updatedForm);
+              setErrorMessages((prev) => prev.filter((issue) => issue.path[0] !== 'deadline'));
+              debouncedValidate(updatedForm);
+            }}
+            className={cn(
+              'w-full rounded-md border px-4 py-2',
+              safeErrorMessages.some((e) => e.path[0] === 'deadline')
+                ? 'border-red-500 focus:ring-red-500'
+                : 'border-gray-300 focus:ring-indigo-500'
+            )}
+          />
+
+          {safeErrorMessages
+            .filter((issue) => issue.path[0] === 'deadline')
+            .map((issue, index) => (
+              <p key={index} className="text-sm text-red-500 mt-1">
+                {issue.message}
+              </p>
+            ))}
+        </div>
+
         <div>
           <input
             type="text"
