@@ -415,7 +415,7 @@ const CreateJob = () => {
             id="description"
             name="description"
             value={formData.description}
-            type="text"
+            type="textarea"
             onChange={handleInputChange}
             placeholder="Write a brief description"
             required
@@ -616,7 +616,7 @@ const CreateJob = () => {
             id="notes"
             name="notes"
             value={formData.notes}
-            type="text"
+            type="textarea"
             onChange={handleInputChange}
             placeholder="Additional notes"
             required
