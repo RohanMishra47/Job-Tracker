@@ -23,6 +23,16 @@ type Job = {
   status: string;
   jobType: string;
   location: string;
+  description: string;
+  salary: number | [number, number];
+  experienceLevel: 'junior' | 'mid' | 'senior';
+  tags: string[];
+  applicationLink: string;
+  deadline: Date;
+  priority: 'low' | 'medium' | 'high' | number;
+  source: 'LinkedIn' | 'Referral' | 'Company Site' | 'other' | string;
+  notes: string;
+  isFavorite: boolean;
 };
 
 type JobMap = {
