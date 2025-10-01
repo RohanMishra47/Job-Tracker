@@ -105,7 +105,6 @@ const jobSchema = new Schema<IJob>(
     },
     source: {
       type: String,
-      enum: ["LinkedIn", "Referral", "Company Site", "other"],
       required: false,
     },
     notes: { type: String, required: false },
