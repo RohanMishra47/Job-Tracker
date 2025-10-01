@@ -49,6 +49,8 @@ const EditJob = () => {
   const [error, setError] = useState('');
   const [errorMessages, setErrorMessages] = useState<$ZodIssue[]>([]);
   const [isValid, setIsValid] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [fetchError, setFetchError] = useState('');
   const formRef = useRef<HTMLFormElement>(null);
 
   const debouncedValidate = useMemo(
@@ -57,9 +59,11 @@ const EditJob = () => {
   );
 
   const fetchJobs = async () => {
+    setLoading(true);
+    setFetchError('');
     try {
-      const response = await api.get('/jobs');
-      const jobList: Job[] = Array.isArray(response.data) ? response.data : [];
+      const response = await api.get('/jobs?limit=1000');
+      const jobList: Job[] = response.data.jobs || [];
       SetExistingJobs(jobList);
       const grouped: JobMap = allStatuses.reduce((acc, status) => {
         acc[status] = [];
@@ -73,6 +77,9 @@ const EditJob = () => {
       setJobs(grouped);
     } catch (error) {
       console.error('Error fetching jobs', error);
+      setFetchError('Failed to load jobs. Please check your connection or login status.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -387,51 +394,67 @@ const EditJob = () => {
         </form>
       </div>
 
-      <div className="mt-10 w-full max-w-6xl space-y-8">
-        {Object.entries(jobs).map(([status, jobsArray]) => (
-          <section key={status}>
-            <h2 className="text-xl font-bold capitalize mb-4">{status}</h2>
+      {loading && (
+        <div className="flex justify-center items-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+          <span className="ml-2 text-gray-600">Loading jobs...</span>
+        </div>
+      )}
+      {fetchError && (
+        <div className="mx-auto max-w-2xl p-6 bg-red-50 border border-red-200 rounded-lg">
+          <p className="text-red-700">{fetchError}</p>
+          <button onClick={fetchJobs} className="mt-2 text-indigo-600 hover:underline">
+            Try Again
+          </button>
+        </div>
+      )}
+      {!loading && !fetchError && (
+        <div className="mt-10 w-full max-w-6xl space-y-8">
+          {Object.entries(jobs).map(([status, jobsArray]) => (
+            <section key={status}>
+              <h2 className="text-xl font-bold capitalize mb-4">{status}</h2>
 
-            {jobsArray.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {jobsArray.map((job) => (
-                  <div
-                    key={job._id}
-                    className="flex flex-col gap-2 rounded-lg bg-white p-4 shadow-md"
-                  >
-                    <p className="text-gray-600">{job.company}</p>
-                    <p className="text-gray-500">{job.position}</p>
-                    <p className="text-gray-500">{job.jobType}</p>
-                    <p className="text-gray-500">{job.location}</p>
+              {jobsArray.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {jobsArray.map((job) => (
+                    <div
+                      key={job._id}
+                      className="flex flex-col gap-2 rounded-lg bg-white p-4 shadow-md"
+                    >
+                      <p className="text-gray-600">{job.company}</p>
+                      <p className="text-gray-500">{job.position}</p>
+                      <p className="text-gray-500">{job.jobType}</p>
+                      <p className="text-gray-500">{job.location}</p>
 
-                    <div className="flex justify-end gap-2 pt-3 border-t border-gray-200">
-                      {/* Edit Button */}
-                      <button
-                        onClick={() => handleEdit(job)}
-                        className="p-2 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-800 transition-colors duration-200"
-                        title="Edit Job"
-                      >
-                        <Edit className="w-5 h-5" />
-                      </button>
+                      <div className="flex justify-end gap-2 pt-3 border-t border-gray-200">
+                        {/* Edit Button */}
+                        <button
+                          onClick={() => handleEdit(job)}
+                          className="p-2 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-800 transition-colors duration-200"
+                          title="Edit Job"
+                        >
+                          <Edit className="w-5 h-5" />
+                        </button>
 
-                      {/* Delete Button */}
-                      <button
-                        onClick={() => handleDelete(job._id)}
-                        className="p-2 rounded-full bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-800 transition-colors duration-200"
-                        title="Delete Job"
-                      >
-                        <Trash2 className="w-5 h-5" />
-                      </button>
+                        {/* Delete Button */}
+                        <button
+                          onClick={() => handleDelete(job._id)}
+                          className="p-2 rounded-full bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-800 transition-colors duration-200"
+                          title="Delete Job"
+                        >
+                          <Trash2 className="w-5 h-5" />
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-gray-400 italic">No jobs in this category</p>
-            )}
-          </section>
-        ))}
-      </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-gray-400 italic">No jobs in this category</p>
+              )}
+            </section>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
