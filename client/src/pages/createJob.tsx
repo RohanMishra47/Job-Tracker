@@ -653,6 +653,35 @@ const CreateJob = () => {
           </div>
         </div>
 
+        {/* Application Link */}
+        <div>
+          <label htmlFor="applicationLink" className="block text-sm font-medium text-gray-700 mb-1">
+            Application Link
+          </label>
+          <input
+            id="applicationLink"
+            name="applicationLink"
+            value={formData.applicationLink}
+            type="text"
+            onChange={handleInputChange}
+            placeholder="https://example.com/apply"
+            required
+            className={cn(
+              'w-full rounded-md border px-4 py-2',
+              safeErrorMessages.some((e) => e.path[0] === 'applicationLink')
+                ? 'border-red-500 focus:ring-red-500'
+                : 'border-gray-300 focus:ring-indigo-500'
+            )}
+          />
+          {safeErrorMessages
+            .filter((issue) => issue.path[0] === 'applicationLink')
+            .map((issue, index) => (
+              <p key={index} className="text-sm text-red-500 mt-1">
+                {issue.message}
+              </p>
+            ))}
+        </div>
+
         <div className="flex items-center">
           <label
             htmlFor="isFavorite"
