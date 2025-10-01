@@ -160,7 +160,10 @@ const CreateJob = () => {
     }
   };
 
-  const handleDropdownChange = (field: 'status' | 'jobType' | 'priority', value: string) => {
+  const handleDropdownChange = (
+    field: 'status' | 'jobType' | 'priority' | 'source',
+    value: string
+  ) => {
     const updatedForm = { ...formData, [field]: value };
     setFormData(updatedForm);
     setErrorMessages((prev) => prev.filter((issue) => issue.path[0] !== field));
@@ -508,6 +511,62 @@ const CreateJob = () => {
           </DropdownMenu>
           {safeErrorMessages
             .filter((issue) => issue.path[0] === 'priority')
+            .map((issue, index) => (
+              <p key={index} className="text-sm text-red-500 mt-1">
+                {issue.message}
+              </p>
+            ))}
+        </div>
+
+        <div>
+          <label htmlFor="source" className="block text-sm font-medium text-gray-700 mb-1">
+            Source
+          </label>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                className={cn(
+                  'w-full rounded-md border px-4 py-2',
+                  safeErrorMessages.some((e) => e.path[0] === 'source')
+                    ? 'border-red-500 focus:ring-red-500'
+                    : 'border-gray-300 focus:ring-indigo-500'
+                )}
+              >
+                {formData.source === 'LinkedIn' ||
+                formData.source === 'Referral' ||
+                formData.source === 'Company Site'
+                  ? formData.source
+                  : formData.source === 'other'
+                    ? 'Other'
+                    : 'Select Source'}
+                <ChevronDown className="ml-2 h-4 w-4 opacity-50" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-full rounded-md border border-gray-200 shadow-md">
+              {['LinkedIn', 'Referral', 'Company Site', 'other'].map((source) => (
+                <DropdownMenuItem
+                  key={source}
+                  onSelect={() => handleDropdownChange('source', source)}
+                  className="px-3 py-2 cursor-pointer focus:bg-indigo-50 focus:text-indigo-700 transition-colors duration-150"
+                >
+                  {source === 'other' ? 'Other' : source}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {formData.source === 'other' && (
+            <input
+              type="text"
+              placeholder="Specify source"
+              onChange={(e) => handleDropdownChange('source', e.target.value)}
+              className="mt-2 w-full rounded-md border border-gray-300 px-4 py-2 focus:ring-indigo-500 focus:border-indigo-500"
+            />
+          )}
+
+          {safeErrorMessages
+            .filter((issue) => issue.path[0] === 'source')
             .map((issue, index) => (
               <p key={index} className="text-sm text-red-500 mt-1">
                 {issue.message}
