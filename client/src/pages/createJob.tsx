@@ -595,6 +595,27 @@ const CreateJob = () => {
           </div>
         </div>
 
+        <div className="flex items-center">
+          <label
+            htmlFor="isFavorite"
+            className="ml-2 block text-sm font-medium text-gray-700 cursor-pointer"
+          >
+            Mark as Favorite
+          </label>
+          <input
+            id="isFavorite"
+            type="checkbox"
+            checked={formData.isFavorite || false}
+            onChange={(e) => {
+              const updatedForm = { ...formData, isFavorite: e.target.checked };
+              setFormData(updatedForm);
+              setErrorMessages((prev) => prev.filter((issue) => issue.path[0] !== 'isFavorite'));
+              debouncedValidate(updatedForm);
+            }}
+            className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded cursor-pointer"
+          />
+        </div>
+
         {error && <p className="text-sm text-red-500">{error}</p>}
 
         <Button
