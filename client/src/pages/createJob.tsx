@@ -446,11 +446,12 @@ const CreateJob = () => {
             id="deadline"
             name="deadline"
             type="date"
-            value={formData.deadline ? new Date(formData.deadline).toISOString().slice(0, 10) : ''}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-              const { value } = e.target;
-              const deadlineValue = value ? new Date(value) : undefined;
-              const updatedForm = { ...formData, deadline: deadlineValue };
+            value={formData.deadline?.toISOString().split('T')[0] ?? ''}
+            onChange={(e) => {
+              const updatedForm = {
+                ...formData,
+                deadline: e.target.value ? new Date(e.target.value) : undefined,
+              };
               setFormData(updatedForm);
               setErrorMessages((prev) => prev.filter((issue) => issue.path[0] !== 'deadline'));
               debouncedValidate(updatedForm);
