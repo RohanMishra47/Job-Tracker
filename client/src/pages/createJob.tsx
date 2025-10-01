@@ -406,6 +406,35 @@ const CreateJob = () => {
             ))}
         </div>
 
+        {/* Description */}
+        <div>
+          <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+            Description
+          </label>
+          <input
+            id="description"
+            name="description"
+            value={formData.description}
+            type="text"
+            onChange={handleInputChange}
+            placeholder="Write a brief description"
+            required
+            className={cn(
+              'w-full rounded-md border px-4 py-2',
+              safeErrorMessages.some((e) => e.path[0] === 'description')
+                ? 'border-red-500 focus:ring-red-500'
+                : 'border-gray-300 focus:ring-indigo-500'
+            )}
+          />
+          {safeErrorMessages
+            .filter((issue) => issue.path[0] === 'description')
+            .map((issue, index) => (
+              <p key={index} className="text-sm text-red-500 mt-1">
+                {issue.message}
+              </p>
+            ))}
+        </div>
+
         <div>
           <label>
             <input
@@ -571,6 +600,35 @@ const CreateJob = () => {
 
           {safeErrorMessages
             .filter((issue) => issue.path[0] === 'source')
+            .map((issue, index) => (
+              <p key={index} className="text-sm text-red-500 mt-1">
+                {issue.message}
+              </p>
+            ))}
+        </div>
+
+        {/* Notes */}
+        <div>
+          <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-1">
+            Notes
+          </label>
+          <input
+            id="notes"
+            name="notes"
+            value={formData.notes}
+            type="text"
+            onChange={handleInputChange}
+            placeholder="Additional notes"
+            required
+            className={cn(
+              'w-full rounded-md border px-4 py-2',
+              safeErrorMessages.some((e) => e.path[0] === 'notes')
+                ? 'border-red-500 focus:ring-red-500'
+                : 'border-gray-300 focus:ring-indigo-500'
+            )}
+          />
+          {safeErrorMessages
+            .filter((issue) => issue.path[0] === 'notes')
             .map((issue, index) => (
               <p key={index} className="text-sm text-red-500 mt-1">
                 {issue.message}
