@@ -12,6 +12,7 @@ import { createDebouncedValidate } from '@/utils/validation';
 import axios from 'axios';
 import { ChevronDown } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react';
+import { toast } from 'react-hot-toast';
 import { z } from 'zod';
 
 // For API responses (strict types)
@@ -214,9 +215,10 @@ const CreateJob = () => {
       // Success
       setFormData(initialFormData);
       setIsSubmitting(false);
-      alert('Job created successfully!'); // Or toast
+      toast.success('Job created successfully!');
       // Optional: const navigate = useNavigate(); navigate('/dashboard');
     } catch (err: unknown) {
+      toast.error('Job creation failed');
       console.error('API/Non-Zod error:', err);
       if (axios.isAxiosError(err) && err.response) {
         setError(err.response.data?.message || err.response.data?.error || 'Job Creation Failed');

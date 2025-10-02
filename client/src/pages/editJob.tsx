@@ -13,6 +13,7 @@ import { createDebouncedValidate } from '@/utils/validation';
 import axios from 'axios';
 import { ChevronDown, Edit, Trash2 } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import toast from 'react-hot-toast';
 import { ZodError } from 'zod';
 import type { $ZodIssue } from 'zod/v4/core';
 
@@ -186,8 +187,10 @@ const EditJob = () => {
 
       await api.put(`/jobs/${selectedJob._id}`, selectedJob);
       setSelectedJob(null);
+      toast.success('Job updated successfully');
       fetchJobs();
     } catch (err: unknown) {
+      toast.error('Job update failed');
       if (err instanceof ZodError) {
         setErrorMessages(err.issues);
       } else if (axios.isAxiosError(err) && err.response) {
@@ -205,6 +208,10 @@ const EditJob = () => {
     if (!jobId) return;
     try {
       await api.delete(`/jobs/${jobId}`);
+      if (selectedJob && selectedJob._id === jobId) {
+        setSelectedJob(null);
+      }
+      toast.success('Job deleted successfully');
       fetchJobs();
     } catch (err: unknown) {
       if (axios.isAxiosError(err) && err.response) {
