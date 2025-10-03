@@ -312,6 +312,15 @@ const JobBoard: React.FC = () => {
   // Render
   return (
     <div>
+      {/* Search Input */}
+      <input
+        type="text"
+        placeholder="Search by company or position"
+        value={searchQueryInput}
+        onChange={(e) => setSearchQueryInput(e.target.value)}
+        className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300"
+      />
+      {/* Filters Component */}
       <JobFilters
         priorities={filters.priorities}
         jobTypes={filters.jobTypes}
