@@ -5,6 +5,7 @@ export const JobFilters = ({
   jobTypes: selectedJobTypes,
   statuses: selectedStatuses,
   onFilterChange,
+  onClearAll,
 }: JobFiltersProps) => {
   // Handle filter changes for any group
   const handleFilterChange = (groupKey: string, value: string, isChecked: boolean) => {
@@ -64,13 +65,7 @@ export const JobFilters = ({
       ))}
       <div className="pt-4 border-t border-gray-200">
         <button
-          onClick={() =>
-            onFilterChange({
-              priorities: [],
-              jobTypes: [],
-              statuses: [],
-            })
-          }
+          onClick={onClearAll}
           className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1"
         >
           <svg

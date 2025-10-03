@@ -19,6 +19,7 @@ export type JobFiltersProps = {
     jobTypes: string[];
     statuses: string[];
   }) => void;
+  onClearAll: () => void;
 };
 
 // Filter groups configuration
