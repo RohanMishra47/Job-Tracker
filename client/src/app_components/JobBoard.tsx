@@ -238,6 +238,9 @@ const JobBoard: React.FC = () => {
         }, {} as JobMap);
 
         jobList.forEach((job) => {
+          if (!grouped[job.status]) {
+            grouped[job.status] = [];
+          }
           grouped[job.status].push(job);
         });
 
