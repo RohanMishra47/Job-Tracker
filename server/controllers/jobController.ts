@@ -155,7 +155,7 @@ export const getJobs = async (req: RequestWithUser, res: Response) => {
       });
     }
 
-    const { search, status, type, sortBy = "newest" } = req.query;
+    const { search, status, type, priority, sortBy = "newest" } = req.query;
     const page = Math.max(1, parseInt(req.query.page as string) || 1);
     const limit = Math.min(100, parseInt(req.query.limit as string) || 10);
     const skip = (page - 1) * limit;
@@ -178,6 +178,17 @@ export const getJobs = async (req: RequestWithUser, res: Response) => {
         : [];
       if (statusArray.length > 0) {
         query.status = { $in: statusArray };
+      }
+    }
+
+    if (priority) {
+      const priorityArray = Array.isArray(priority)
+        ? priority
+        : typeof priority === "string"
+        ? priority.split(",").filter(Boolean)
+        : [];
+      if (priorityArray.length > 0) {
+        query.priority = { $in: priorityArray };
       }
     }
 
