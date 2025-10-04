@@ -161,6 +161,7 @@ export const getJobs = async (req: RequestWithUser, res: Response) => {
       type,
       priority,
       experienceLevel,
+      sources,
       sortBy = "newest",
     } = req.query;
     const page = Math.max(1, parseInt(req.query.page as string) || 1);
@@ -220,6 +221,19 @@ export const getJobs = async (req: RequestWithUser, res: Response) => {
         query.experienceLevel = { $in: expArray };
       }
     }
+
+    if (sources) {
+      const sourcesArray = Array.isArray(sources)
+        ? sources
+        : typeof sources === "string"
+        ? sources.split(",").filter(Boolean)
+        : [];
+      if (sourcesArray.length > 0) {
+        query.source = { $in: sourcesArray };
+      }
+    }
+
+    console.log("Querying jobs with:", query);
 
     // Determine sort order
 

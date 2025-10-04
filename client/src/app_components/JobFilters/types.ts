@@ -15,11 +15,13 @@ export type JobFiltersProps = {
   jobTypes: string[];
   statuses: string[];
   experienceLevel: string[];
+  sources: string[];
   onFilterChange: (filters: {
     priorities: string[];
     jobTypes: string[];
     statuses: string[];
     experienceLevel: string[];
+    sources: string[];
   }) => void;
   onClearAll: () => void;
 };
@@ -63,6 +65,16 @@ export const FILTER_GROUPS: FilterGroup[] = [
       { label: 'Junior', value: 'junior' },
       { label: 'Mid', value: 'mid' },
       { label: 'Senior', value: 'senior' },
+    ],
+  },
+  {
+    key: 'sources',
+    label: 'Source',
+    options: [
+      { label: 'LinkedIn', value: 'LinkedIn' },
+      { label: 'Referral', value: 'Referral' },
+      { label: 'Company Site', value: 'Company Site' },
+      { label: 'Other', value: 'other' },
     ],
   },
 ] as const;
