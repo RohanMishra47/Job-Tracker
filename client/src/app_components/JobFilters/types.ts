@@ -16,12 +16,14 @@ export type JobFiltersProps = {
   statuses: string[];
   experienceLevel: string[];
   sources: string[];
+  date: string; // e.g., 'next7', 'next30', 'overdue', 'none'
   onFilterChange: (filters: {
     priorities: string[];
     jobTypes: string[];
     statuses: string[];
     experienceLevel: string[];
     sources: string[];
+    date: string | '';
   }) => void;
   onClearAll: () => void;
 };
@@ -75,6 +77,16 @@ export const FILTER_GROUPS: FilterGroup[] = [
       { label: 'Referral', value: 'Referral' },
       { label: 'Company Site', value: 'Company Site' },
       { label: 'Other', value: 'other' },
+    ],
+  },
+  {
+    key: 'date',
+    label: 'Date',
+    options: [
+      { label: 'Next 7 days', value: 'next7' },
+      { label: 'Next 30 days', value: 'next30' },
+      { label: 'Overdue', value: 'overdue' },
+      { label: 'No deadline', value: 'none' },
     ],
   },
 ] as const;

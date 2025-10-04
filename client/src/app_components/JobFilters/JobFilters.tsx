@@ -6,6 +6,7 @@ export const JobFilters = ({
   statuses: selectedStatuses,
   experienceLevel: selectedExperienceLevels,
   sources: selectedSources,
+  date: selectedDate,
   onFilterChange,
   onClearAll,
 }: JobFiltersProps) => {
@@ -42,6 +43,10 @@ export const JobFilters = ({
             ? [...selectedSources, value]
             : selectedSources.filter((s) => s !== value)
           : selectedSources,
+      date:
+        groupKey === 'date'
+          ? value // radios: just set the value
+          : selectedDate,
     });
   };
 
@@ -66,12 +71,13 @@ export const JobFilters = ({
                         ? selectedExperienceLevels.includes(option.value)
                         : group.key === 'sources'
                           ? selectedSources.includes(option.value)
-                          : false;
+                          : selectedDate === option.value;
 
               return (
                 <label key={option.value} className="flex items-center gap-2 cursor-pointer">
                   <input
-                    type="checkbox"
+                    type={group.key === 'date' ? 'radio' : 'checkbox'}
+                    name={group.key} // ensures radios are grouped
                     checked={isChecked}
                     onChange={(e) => handleFilterChange(group.key, option.value, e.target.checked)}
                     className="h-4 w-4 text-blue-600 rounded focus:ring-blue-500"

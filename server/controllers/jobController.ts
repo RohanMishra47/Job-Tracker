@@ -162,6 +162,7 @@ export const getJobs = async (req: RequestWithUser, res: Response) => {
       priority,
       experienceLevel,
       sources,
+      date,
       sortBy = "newest",
     } = req.query;
     const page = Math.max(1, parseInt(req.query.page as string) || 1);
@@ -170,6 +171,7 @@ export const getJobs = async (req: RequestWithUser, res: Response) => {
 
     const query: Record<string, any> = { createdBy: userId };
 
+    // Text search across company, position, location
     if (search) {
       query.$or = [
         { company: { $regex: search, $options: "i" } },
@@ -178,6 +180,24 @@ export const getJobs = async (req: RequestWithUser, res: Response) => {
       ];
     }
 
+    // Date filter handling
+    const now = new Date();
+
+    if (date === "next7") {
+      const next7Days = new Date();
+      next7Days.setDate(now.getDate() + 7);
+      query.deadline = { $lte: next7Days };
+    } else if (date === "next30") {
+      const next30Days = new Date();
+      next30Days.setDate(now.getDate() + 30);
+      query.deadline = { $lte: next30Days };
+    } else if (date === "overdue") {
+      query.deadline = { $lt: now };
+    } else if (date === "none") {
+      query.deadline = { $exists: false };
+    }
+
+    // Handle array or comma-separated string filters
     if (status) {
       const statusArray = Array.isArray(status)
         ? status
@@ -239,6 +259,7 @@ export const getJobs = async (req: RequestWithUser, res: Response) => {
 
     const sortDirection = sortBy === "oldest" ? 1 : -1;
 
+    // Pagination and sorting
     const [jobs, totalJobs] = await Promise.all([
       Job.find(query)
         .sort({ createdAt: sortDirection })
