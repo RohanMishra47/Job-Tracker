@@ -390,9 +390,6 @@ const JobBoard: React.FC = () => {
         onClearAll={clearAllFilters}
       />
 
-      {/* Clear Filters Button */}
-      <button onClick={clearAllFilters}>Clear All Filters</button>
-
       {/* Active Filter Tags */}
       {searchQuery && (
         <div className="flex items-center gap-2 mb-2">
