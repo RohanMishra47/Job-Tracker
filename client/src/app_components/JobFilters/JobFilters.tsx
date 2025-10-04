@@ -4,6 +4,7 @@ export const JobFilters = ({
   priorities: selectedPriorities,
   jobTypes: selectedJobTypes,
   statuses: selectedStatuses,
+  experienceLevel: selectedExperienceLevels,
   onFilterChange,
   onClearAll,
 }: JobFiltersProps) => {
@@ -28,6 +29,12 @@ export const JobFilters = ({
             ? [...selectedStatuses, value]
             : selectedStatuses.filter((s) => s !== value)
           : selectedStatuses,
+      experienceLevel:
+        groupKey === 'experienceLevel'
+          ? isChecked
+            ? [...selectedExperienceLevels, value]
+            : selectedExperienceLevels.filter((e) => e !== value)
+          : selectedExperienceLevels,
     });
   };
 
@@ -46,7 +53,11 @@ export const JobFilters = ({
                   ? selectedPriorities.includes(option.value)
                   : group.key === 'jobTypes'
                     ? selectedJobTypes.includes(option.value)
-                    : selectedStatuses.includes(option.value);
+                    : group.key === 'statuses'
+                      ? selectedStatuses.includes(option.value)
+                      : group.key === 'experienceLevel'
+                        ? selectedExperienceLevels.includes(option.value)
+                        : false;
 
               return (
                 <label key={option.value} className="flex items-center gap-2 cursor-pointer">

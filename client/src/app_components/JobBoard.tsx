@@ -38,6 +38,7 @@ type FilterPreset = {
   statuses: string[];
   jobTypes: string[];
   priorities: string[];
+  experienceLevel: string[];
   sortBy: string;
   page: number;
   limit: number;
@@ -47,6 +48,7 @@ type FilterState = {
   priorities: string[];
   jobTypes: string[];
   statuses: string[];
+  experienceLevel: string[];
 };
 
 const allStatuses =
@@ -61,15 +63,26 @@ const JobBoard: React.FC = () => {
     const type = params.get('type')?.split(',').filter(Boolean);
     const priority = params.get('priority')?.split(',').filter(Boolean);
     const sort = params.get('sort') === 'oldest' ? 'oldest' : 'newest';
+    const experienceLevel = params.get('experienceLevel')?.split(',').filter(Boolean);
     const page = params.get('page');
     const limit = params.get('limit');
 
-    if (search || status?.length || type?.length || priority?.length || sort || page || limit) {
+    if (
+      search ||
+      status?.length ||
+      type?.length ||
+      priority?.length ||
+      experienceLevel?.length ||
+      sort ||
+      page ||
+      limit
+    ) {
       return {
         search: search || '',
         status: status || [],
         type: type || [],
         priority: priority || [],
+        experienceLevel: experienceLevel || [],
         sort: sort || 'newest',
         page: page ? parseInt(page, 10) : 1,
         limit: limit ? parseInt(limit, 10) : 10,
@@ -84,13 +97,23 @@ const JobBoard: React.FC = () => {
         status: parsed.selectedStatuses || [],
         type: parsed.selectedJobTypes || [],
         priority: parsed.selectedPriorities || [],
+        experienceLevel: parsed.selectedExperienceLevels || [],
         sort: parsed.sortBy || 'newest',
         page: parsed.currentPage ? parseInt(parsed.currentPage, 10) : 1,
         limit: parsed.limit ? parseInt(parsed.limit, 10) : 10,
       };
     }
 
-    return { search: '', status: [], type: [], priority: [], sort: 'newest', page: 1, limit: 10 };
+    return {
+      search: '',
+      status: [],
+      type: [],
+      priority: [],
+      experienceLevel: [],
+      sort: 'newest',
+      page: 1,
+      limit: 10,
+    };
   };
 
   const initialFilters = getInitialFilters();
@@ -116,6 +139,7 @@ const JobBoard: React.FC = () => {
     priorities: initialFilters.priority,
     jobTypes: initialFilters.type,
     statuses: initialFilters.status,
+    experienceLevel: initialFilters.experienceLevel,
   });
 
   // Memoized values
@@ -192,7 +216,7 @@ const JobBoard: React.FC = () => {
   };
 
   const clearAllFilters = () => {
-    setFilters({ priorities: [], jobTypes: [], statuses: [] });
+    setFilters({ priorities: [], jobTypes: [], statuses: [], experienceLevel: [] });
     setSearchQuery('');
     setSearchQueryInput('');
     setSortBy('newest');
@@ -205,6 +229,7 @@ const JobBoard: React.FC = () => {
     filters.statuses.length === 0 &&
     filters.jobTypes.length === 0 &&
     filters.priorities.length === 0 &&
+    filters.experienceLevel.length === 0 &&
     sortBy === 'newest';
 
   // Effects
@@ -219,6 +244,8 @@ const JobBoard: React.FC = () => {
         if (filters.statuses.length) params.set('status', filters.statuses.join(','));
         if (filters.jobTypes.length) params.set('type', filters.jobTypes.join(','));
         if (filters.priorities.length) params.set('priority', filters.priorities.join(','));
+        if (filters.experienceLevel.length)
+          params.set('experienceLevel', filters.experienceLevel.join(','));
         if (sortBy) params.set('sortBy', sortBy);
         if (currentPage) params.set('page', String(currentPage));
         if (limit) params.set('limit', String(limit));
@@ -254,6 +281,7 @@ const JobBoard: React.FC = () => {
     filters.statuses,
     filters.jobTypes,
     filters.priorities,
+    filters.experienceLevel,
     sortBy,
     currentPage,
     limit,
@@ -277,6 +305,7 @@ const JobBoard: React.FC = () => {
       statuses: filters.statuses,
       jobTypes: filters.jobTypes,
       priorities: filters.priorities,
+      experienceLevel: filters.experienceLevel,
       sortBy,
       currentPage,
       limit,
@@ -288,6 +317,7 @@ const JobBoard: React.FC = () => {
     filters.statuses,
     filters.jobTypes,
     filters.priorities,
+    filters.experienceLevel,
     sortBy,
     currentPage,
     limit,
@@ -303,6 +333,8 @@ const JobBoard: React.FC = () => {
     if (filters.statuses.length > 0) params.set('status', filters.statuses.join(','));
     if (filters.jobTypes.length > 0) params.set('type', filters.jobTypes.join(','));
     if (filters.priorities.length > 0) params.set('priority', filters.priorities.join(','));
+    if (filters.experienceLevel.length > 0)
+      params.set('experienceLevel', filters.experienceLevel.join(','));
     if (sortBy) params.set('sort', sortBy);
     if (currentPage) params.set('page', String(currentPage));
     if (limit) params.set('limit', String(limit));
@@ -314,6 +346,7 @@ const JobBoard: React.FC = () => {
     filters.statuses,
     filters.jobTypes,
     filters.priorities,
+    filters.experienceLevel,
     isInitialized,
     sortBy,
     currentPage,
@@ -336,6 +369,7 @@ const JobBoard: React.FC = () => {
         priorities={filters.priorities}
         jobTypes={filters.jobTypes}
         statuses={filters.statuses}
+        experienceLevel={filters.experienceLevel}
         onFilterChange={setFilters}
         onClearAll={clearAllFilters}
       />
@@ -433,6 +467,30 @@ const JobBoard: React.FC = () => {
         </div>
       )}
 
+      {filters.experienceLevel.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2 mb-2">
+          <span className="font-semibold text-sm text-gray-500">Experience Level:</span>
+          {filters.experienceLevel.map((level) => (
+            <span
+              key={level}
+              className="tag transition-opacity duration-300 ease-in-out opacity-100"
+            >
+              {level}
+              <button
+                onClick={() =>
+                  setFilters((prev) => ({
+                    ...prev,
+                    experienceLevel: prev.experienceLevel.filter((e) => e !== level),
+                  }))
+                }
+              >
+                x
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+
       {/* Copy Link Button */}
       <div className="relative group inline-block">
         <button
@@ -464,6 +522,7 @@ const JobBoard: React.FC = () => {
               priorities: selected.priorities,
               jobTypes: selected.jobTypes,
               statuses: selected.statuses,
+              experienceLevel: selected.experienceLevel,
             });
             setCurrentPage(selected.page || 1);
             if (selected.sortBy === 'newest' || selected.sortBy === 'oldest') {
@@ -526,6 +585,7 @@ const JobBoard: React.FC = () => {
             statuses: filters.statuses,
             jobTypes: filters.jobTypes,
             priorities: filters.priorities,
+            experienceLevel: filters.experienceLevel,
             sortBy,
             page: currentPage,
             limit: limit,

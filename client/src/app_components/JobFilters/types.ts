@@ -14,10 +14,12 @@ export type JobFiltersProps = {
   priorities: string[];
   jobTypes: string[];
   statuses: string[];
+  experienceLevel: string[];
   onFilterChange: (filters: {
     priorities: string[];
     jobTypes: string[];
     statuses: string[];
+    experienceLevel: string[];
   }) => void;
   onClearAll: () => void;
 };
@@ -52,6 +54,15 @@ export const FILTER_GROUPS: FilterGroup[] = [
       { label: 'Interviewing', value: 'interviewing' },
       { label: 'Offer', value: 'offer' },
       { label: 'Rejected', value: 'rejected' },
+    ],
+  },
+  {
+    key: 'experienceLevel',
+    label: 'Experience Level',
+    options: [
+      { label: 'Junior', value: 'junior' },
+      { label: 'Mid', value: 'mid' },
+      { label: 'Senior', value: 'senior' },
     ],
   },
 ] as const;

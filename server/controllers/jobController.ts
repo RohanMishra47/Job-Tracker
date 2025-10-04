@@ -155,7 +155,14 @@ export const getJobs = async (req: RequestWithUser, res: Response) => {
       });
     }
 
-    const { search, status, type, priority, sortBy = "newest" } = req.query;
+    const {
+      search,
+      status,
+      type,
+      priority,
+      experienceLevel,
+      sortBy = "newest",
+    } = req.query;
     const page = Math.max(1, parseInt(req.query.page as string) || 1);
     const limit = Math.min(100, parseInt(req.query.limit as string) || 10);
     const skip = (page - 1) * limit;
@@ -202,6 +209,19 @@ export const getJobs = async (req: RequestWithUser, res: Response) => {
         query.jobType = { $in: typeArray };
       }
     }
+
+    if (experienceLevel) {
+      const expArray = Array.isArray(experienceLevel)
+        ? experienceLevel
+        : typeof experienceLevel === "string"
+        ? experienceLevel.split(",").filter(Boolean)
+        : [];
+      if (expArray.length > 0) {
+        query.experienceLevel = { $in: expArray };
+      }
+    }
+
+    // Determine sort order
 
     const sortDirection = sortBy === "oldest" ? 1 : -1;
 
