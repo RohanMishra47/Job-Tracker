@@ -1,6 +1,9 @@
 import { Response } from "express";
 import { validationResult } from "express-validator";
 import mongoose from "mongoose";
+import { buildArrayFilter } from "../filters/buildArrayFilter";
+import { buildDateFilter } from "../filters/buildDateFilter";
+import { buildSearchFilter } from "../filters/buildSearchFilter";
 import { RequestWithUser } from "../interfaces/reqInterfaces";
 import { Job } from "../models/Job";
 
@@ -169,89 +172,20 @@ export const getJobs = async (req: RequestWithUser, res: Response) => {
     const limit = Math.min(100, parseInt(req.query.limit as string) || 10);
     const skip = (page - 1) * limit;
 
-    const query: Record<string, any> = { createdBy: userId };
-
-    // Text search across company, position, location
-    if (search) {
-      query.$or = [
-        { company: { $regex: search, $options: "i" } },
-        { position: { $regex: search, $options: "i" } },
-        { location: { $regex: search, $options: "i" } },
-      ];
-    }
-
-    // Date filter handling
-    const now = new Date();
-
-    if (date === "next7") {
-      const next7Days = new Date();
-      next7Days.setDate(now.getDate() + 7);
-      query.deadline = { $lte: next7Days };
-    } else if (date === "next30") {
-      const next30Days = new Date();
-      next30Days.setDate(now.getDate() + 30);
-      query.deadline = { $lte: next30Days };
-    } else if (date === "overdue") {
-      query.deadline = { $lt: now };
-    } else if (date === "none") {
-      query.deadline = { $exists: false };
-    }
-
-    // Handle array or comma-separated string filters
-    if (status) {
-      const statusArray = Array.isArray(status)
-        ? status
-        : typeof status === "string"
-        ? status.split(",").filter(Boolean)
-        : [];
-      if (statusArray.length > 0) {
-        query.status = { $in: statusArray };
-      }
-    }
-
-    if (priority) {
-      const priorityArray = Array.isArray(priority)
-        ? priority
-        : typeof priority === "string"
-        ? priority.split(",").filter(Boolean)
-        : [];
-      if (priorityArray.length > 0) {
-        query.priority = { $in: priorityArray };
-      }
-    }
-
-    if (type) {
-      const typeArray = Array.isArray(type)
-        ? type
-        : typeof type === "string"
-        ? type.split(",").filter(Boolean)
-        : [];
-      if (typeArray.length > 0) {
-        query.jobType = { $in: typeArray };
-      }
-    }
-
-    if (experienceLevel) {
-      const expArray = Array.isArray(experienceLevel)
-        ? experienceLevel
-        : typeof experienceLevel === "string"
-        ? experienceLevel.split(",").filter(Boolean)
-        : [];
-      if (expArray.length > 0) {
-        query.experienceLevel = { $in: expArray };
-      }
-    }
-
-    if (sources) {
-      const sourcesArray = Array.isArray(sources)
-        ? sources
-        : typeof sources === "string"
-        ? sources.split(",").filter(Boolean)
-        : [];
-      if (sourcesArray.length > 0) {
-        query.source = { $in: sourcesArray };
-      }
-    }
+    // Build query object
+    const query: Record<string, any> = {
+      createdBy: userId,
+      ...buildSearchFilter(search as string),
+      ...buildDateFilter(date as string),
+      ...buildArrayFilter("status", status as string | string[]),
+      ...buildArrayFilter("jobType", type as string | string[]),
+      ...buildArrayFilter("priority", priority as string | string[]),
+      ...buildArrayFilter(
+        "experienceLevel",
+        experienceLevel as string | string[]
+      ),
+      ...buildArrayFilter("source", sources as string | string[]),
+    };
 
     console.log("Querying jobs with:", query);
 
