@@ -65,7 +65,7 @@ export const ArrayFilters = ({ filters, onFilterChange, onClearAll }: JobFilters
         </div>
       ))}
       <div className="space-y-3">
-        <div className="flex items-center gap-2">
+        <label className="flex items-center gap-2">
           <input
             type="checkbox"
             name="isFavorite"
@@ -74,7 +74,7 @@ export const ArrayFilters = ({ filters, onFilterChange, onClearAll }: JobFilters
             className="h-4 w-4 text-blue-600 rounded focus:ring-blue-500"
           />
           <span className="text-sm text-gray-700">Show Favorites Only</span>
-        </div>
+        </label>
       </div>
       <div className="pt-4 border-t border-gray-200">
         <button
