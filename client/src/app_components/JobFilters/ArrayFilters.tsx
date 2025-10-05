@@ -3,15 +3,33 @@ import { FILTER_GROUPS, type JobFiltersProps } from './types';
 
 export const ArrayFilters = ({ filters, onFilterChange, onClearAll }: JobFiltersProps) => {
   // Handle filter changes for any group
-  const handleFilterChange = (groupKey: keyof FilterState, value: string, isChecked: boolean) => {
+  const handleFilterChange = (
+    groupKey: keyof FilterState,
+    value: string | boolean,
+    isChecked?: boolean
+  ) => {
+    if (groupKey === 'isFavorite') {
+      onFilterChange({
+        ...filters,
+        isFavorite: value as boolean,
+      });
+      return;
+    }
+
+    if (groupKey === 'date') {
+      onFilterChange({
+        ...filters,
+        date: value as string,
+      });
+      return;
+    }
+
+    // array-based filters
     onFilterChange({
       ...filters,
-      [groupKey]:
-        groupKey === 'date'
-          ? value // radios: just set the value
-          : isChecked
-            ? [...(filters[groupKey] as string[]), value]
-            : (filters[groupKey] as string[]).filter((v) => v !== value),
+      [groupKey]: isChecked
+        ? [...(filters[groupKey] as string[]), value as string]
+        : (filters[groupKey] as string[]).filter((v) => v !== value),
     });
   };
 
@@ -46,6 +64,18 @@ export const ArrayFilters = ({ filters, onFilterChange, onClearAll }: JobFilters
           </div>
         </div>
       ))}
+      <div className="space-y-3">
+        <div className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            name="isFavorite"
+            checked={filters.isFavorite}
+            onChange={(e) => handleFilterChange('isFavorite', e.target.checked)}
+            className="h-4 w-4 text-blue-600 rounded focus:ring-blue-500"
+          />
+          <span className="text-sm text-gray-700">Show Favorites Only</span>
+        </div>
+      </div>
       <div className="pt-4 border-t border-gray-200">
         <button
           onClick={onClearAll}

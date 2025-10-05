@@ -167,6 +167,7 @@ export const getJobs = async (req: RequestWithUser, res: Response) => {
       sources,
       tags,
       date,
+      isFavorite,
       sortBy = "newest",
     } = req.query;
     const page = Math.max(1, parseInt(req.query.page as string) || 1);
@@ -187,6 +188,7 @@ export const getJobs = async (req: RequestWithUser, res: Response) => {
       ),
       ...buildArrayFilter("source", sources as string | string[]),
       ...buildArrayFilter("tags", tags as string | string[]),
+      ...(isFavorite === "true" ? { isFavorite: true } : {}),
     };
 
     console.log("Querying jobs with:", query);

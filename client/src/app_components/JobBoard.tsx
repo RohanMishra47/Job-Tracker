@@ -43,6 +43,7 @@ type FilterPreset = {
   sources: string[];
   tags: string[];
   date?: string;
+  isFavorite?: boolean;
   sortBy: string;
   page: number;
   limit: number;
@@ -56,6 +57,7 @@ export type FilterState = {
   sources: string[];
   tags: string[];
   date: string | '';
+  isFavorite: boolean;
 };
 
 const allStatuses =
@@ -73,6 +75,7 @@ const JobBoard: React.FC = () => {
     const experienceLevel = params.get('experienceLevel')?.split(',').filter(Boolean);
     const tags = params.get('tags')?.split(',').filter(Boolean);
     const date = params.get('date');
+    const isFavorite = params.get('isFavorite') === 'true';
     const sources = params.get('sources')?.split(',').filter(Boolean);
     const page = params.get('page');
     const limit = params.get('limit');
@@ -86,6 +89,7 @@ const JobBoard: React.FC = () => {
       sources?.length ||
       tags?.length ||
       date ||
+      isFavorite ||
       sort ||
       page ||
       limit
@@ -99,6 +103,7 @@ const JobBoard: React.FC = () => {
         sources: sources || [],
         tags: tags || [],
         date: date || '',
+        isFavorite: isFavorite || false,
         sort: sort || 'newest',
         page: page ? parseInt(page, 10) : 1,
         limit: limit ? parseInt(limit, 10) : 10,
@@ -117,6 +122,7 @@ const JobBoard: React.FC = () => {
         sources: parsed.selectedSources || [],
         tags: parsed.selectedTags || [],
         date: parsed.date || '',
+        isFavorite: parsed.isFavorite || false,
         sort: parsed.sortBy || 'newest',
         page: parsed.currentPage ? parseInt(parsed.currentPage, 10) : 1,
         limit: parsed.limit ? parseInt(parsed.limit, 10) : 10,
@@ -132,6 +138,7 @@ const JobBoard: React.FC = () => {
       sources: [],
       tags: [],
       date: '',
+      isFavorite: false,
       sort: 'newest',
       page: 1,
       limit: 10,
@@ -165,6 +172,7 @@ const JobBoard: React.FC = () => {
     sources: initialFilters.sources,
     tags: initialFilters.tags,
     date: initialFilters.date,
+    isFavorite: initialFilters.isFavorite || false,
   });
 
   // Memoized values
@@ -249,6 +257,7 @@ const JobBoard: React.FC = () => {
       sources: [],
       tags: [],
       date: '',
+      isFavorite: false,
     });
     setSearchQuery('');
     setSearchQueryInput('');
@@ -266,6 +275,7 @@ const JobBoard: React.FC = () => {
     filters.sources.length === 0 &&
     filters.tags.length === 0 &&
     filters.date === '' &&
+    filters.isFavorite === false &&
     sortBy === 'newest';
 
   // Effects
@@ -285,6 +295,7 @@ const JobBoard: React.FC = () => {
         if (filters.sources.length) params.set('sources', filters.sources.join(','));
         if (filters.tags.length) params.set('tags', filters.tags.join(','));
         if (filters.date) params.set('date', filters.date);
+        if (filters.isFavorite) params.set('isFavorite', 'true');
         if (sortBy) params.set('sortBy', sortBy);
         if (currentPage) params.set('page', String(currentPage));
         if (limit) params.set('limit', String(limit));
@@ -324,6 +335,7 @@ const JobBoard: React.FC = () => {
     filters.sources,
     filters.tags,
     filters.date,
+    filters.isFavorite,
     sortBy,
     currentPage,
     limit,
@@ -351,6 +363,7 @@ const JobBoard: React.FC = () => {
       sources: filters.sources,
       tags: filters.tags,
       date: filters.date,
+      isFavorite: filters.isFavorite,
       sortBy,
       currentPage,
       limit,
@@ -366,6 +379,7 @@ const JobBoard: React.FC = () => {
     filters.sources,
     filters.tags,
     filters.date,
+    filters.isFavorite,
     sortBy,
     currentPage,
     limit,
@@ -386,6 +400,7 @@ const JobBoard: React.FC = () => {
     if (filters.sources.length > 0) params.set('sources', filters.sources.join(','));
     if (filters.tags.length > 0) params.set('tags', filters.tags.join(','));
     if (filters.date) params.set('date', filters.date);
+    if (filters.isFavorite) params.set('isFavorite', 'true');
     if (sortBy) params.set('sort', sortBy);
     if (currentPage) params.set('page', String(currentPage));
     if (limit) params.set('limit', String(limit));
@@ -401,6 +416,7 @@ const JobBoard: React.FC = () => {
     filters.sources,
     filters.tags,
     filters.date,
+    filters.isFavorite,
     isInitialized,
     sortBy,
     currentPage,
@@ -640,6 +656,7 @@ const JobBoard: React.FC = () => {
               sources: selected.sources,
               tags: selected.tags,
               date: selected.date || '',
+              isFavorite: selected.isFavorite || false,
             });
             setCurrentPage(selected.page || 1);
             if (selected.sortBy === 'newest' || selected.sortBy === 'oldest') {
@@ -706,6 +723,7 @@ const JobBoard: React.FC = () => {
             sources: filters.sources,
             tags: filters.tags,
             date: filters.date,
+            isFavorite: filters.isFavorite,
             sortBy,
             page: currentPage,
             limit: limit,
