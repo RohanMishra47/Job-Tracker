@@ -1,11 +1,12 @@
 import { Response } from "express";
 import { validationResult } from "express-validator";
 import mongoose from "mongoose";
-import { buildArrayFilter } from "../filters/buildArrayFilter";
-import { buildDateFilter } from "../filters/buildDateFilter";
-import { buildSearchFilter } from "../filters/buildSearchFilter";
 import { RequestWithUser } from "../interfaces/reqInterfaces";
 import { Job } from "../models/Job";
+import { buildArrayFilter } from "../queryBuilders/buildArrayFilter";
+import { buildDateFilter } from "../queryBuilders/buildDateFilter";
+import { buildSalaryFilter } from "../queryBuilders/buildSalaryFilter";
+import { buildSearchFilter } from "../queryBuilders/buildSearchFilter";
 
 // Helper function for consistent error responses
 const handleControllerError = (
@@ -168,6 +169,8 @@ export const getJobs = async (req: RequestWithUser, res: Response) => {
       tags,
       date,
       isFavorite,
+      salaryMin,
+      salaryMax,
       sortBy = "newest",
     } = req.query;
     const page = Math.max(1, parseInt(req.query.page as string) || 1);
@@ -189,6 +192,7 @@ export const getJobs = async (req: RequestWithUser, res: Response) => {
       ...buildArrayFilter("source", sources as string | string[]),
       ...buildArrayFilter("tags", tags as string | string[]),
       ...(isFavorite === "true" ? { isFavorite: true } : {}),
+      ...buildSalaryFilter(salaryMin as string, salaryMax as string),
     };
 
     console.log("Querying jobs with:", query);

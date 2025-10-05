@@ -6,6 +6,7 @@ import toast from 'react-hot-toast';
 import { api } from '../instances/axiosInstance';
 import JobColumn from './JobColumn';
 import { ArrayFilters } from './JobFilters/ArrayFilters';
+import { SalaryFilter } from './JobFilters/SalaryFilter';
 import { TagsFilter } from './JobFilters/TagsFilter';
 import { FILTER_GROUPS } from './JobFilters/types';
 
@@ -44,6 +45,7 @@ type FilterPreset = {
   tags: string[];
   date?: string;
   isFavorite?: boolean;
+  salary?: { min: number | null; max: number | null };
   sortBy: string;
   page: number;
   limit: number;
@@ -58,6 +60,7 @@ export type FilterState = {
   tags: string[];
   date: string | '';
   isFavorite: boolean;
+  salary: { min: number | null; max: number | null };
 };
 
 const allStatuses =
@@ -76,6 +79,10 @@ const JobBoard: React.FC = () => {
     const tags = params.get('tags')?.split(',').filter(Boolean);
     const date = params.get('date');
     const isFavorite = params.get('isFavorite') === 'true';
+    const salary = {
+      min: params.get('salaryMin') ? parseInt(params.get('salaryMin') ?? '', 10) : null,
+      max: params.get('salaryMax') ? parseInt(params.get('salaryMax') ?? '', 10) : null,
+    };
     const sources = params.get('sources')?.split(',').filter(Boolean);
     const page = params.get('page');
     const limit = params.get('limit');
@@ -90,6 +97,8 @@ const JobBoard: React.FC = () => {
       tags?.length ||
       date ||
       isFavorite ||
+      salary.min !== null ||
+      salary.max !== null ||
       sort ||
       page ||
       limit
@@ -104,6 +113,10 @@ const JobBoard: React.FC = () => {
         tags: tags || [],
         date: date || '',
         isFavorite: isFavorite || false,
+        salary: {
+          min: salary.min !== null ? salary.min : undefined,
+          max: salary.max !== null ? salary.max : undefined,
+        },
         sort: sort || 'newest',
         page: page ? parseInt(page, 10) : 1,
         limit: limit ? parseInt(limit, 10) : 10,
@@ -123,6 +136,10 @@ const JobBoard: React.FC = () => {
         tags: parsed.selectedTags || [],
         date: parsed.date || '',
         isFavorite: parsed.isFavorite || false,
+        salary: {
+          min: parsed.salary?.min || undefined,
+          max: parsed.salary?.max || undefined,
+        },
         sort: parsed.sortBy || 'newest',
         page: parsed.currentPage ? parseInt(parsed.currentPage, 10) : 1,
         limit: parsed.limit ? parseInt(parsed.limit, 10) : 10,
@@ -139,6 +156,7 @@ const JobBoard: React.FC = () => {
       tags: [],
       date: '',
       isFavorite: false,
+      salary: { min: null, max: null },
       sort: 'newest',
       page: 1,
       limit: 10,
@@ -173,6 +191,7 @@ const JobBoard: React.FC = () => {
     tags: initialFilters.tags,
     date: initialFilters.date,
     isFavorite: initialFilters.isFavorite || false,
+    salary: { min: initialFilters.salary.min || null, max: initialFilters.salary.max || null },
   });
 
   // Memoized values
@@ -258,6 +277,7 @@ const JobBoard: React.FC = () => {
       tags: [],
       date: '',
       isFavorite: false,
+      salary: { min: null, max: null },
     });
     setSearchQuery('');
     setSearchQueryInput('');
@@ -276,6 +296,8 @@ const JobBoard: React.FC = () => {
     filters.tags.length === 0 &&
     filters.date === '' &&
     filters.isFavorite === false &&
+    filters.salary.min === null &&
+    filters.salary.max === null &&
     sortBy === 'newest';
 
   // Effects
@@ -296,6 +318,8 @@ const JobBoard: React.FC = () => {
         if (filters.tags.length) params.set('tags', filters.tags.join(','));
         if (filters.date) params.set('date', filters.date);
         if (filters.isFavorite) params.set('isFavorite', 'true');
+        if (filters.salary.min !== null) params.set('salaryMin', String(filters.salary.min));
+        if (filters.salary.max !== null) params.set('salaryMax', String(filters.salary.max));
         if (sortBy) params.set('sortBy', sortBy);
         if (currentPage) params.set('page', String(currentPage));
         if (limit) params.set('limit', String(limit));
@@ -336,6 +360,8 @@ const JobBoard: React.FC = () => {
     filters.tags,
     filters.date,
     filters.isFavorite,
+    filters.salary.min,
+    filters.salary.max,
     sortBy,
     currentPage,
     limit,
@@ -364,6 +390,7 @@ const JobBoard: React.FC = () => {
       tags: filters.tags,
       date: filters.date,
       isFavorite: filters.isFavorite,
+      salary: { min: filters.salary.min, max: filters.salary.max },
       sortBy,
       currentPage,
       limit,
@@ -380,6 +407,8 @@ const JobBoard: React.FC = () => {
     filters.tags,
     filters.date,
     filters.isFavorite,
+    filters.salary.min,
+    filters.salary.max,
     sortBy,
     currentPage,
     limit,
@@ -401,6 +430,8 @@ const JobBoard: React.FC = () => {
     if (filters.tags.length > 0) params.set('tags', filters.tags.join(','));
     if (filters.date) params.set('date', filters.date);
     if (filters.isFavorite) params.set('isFavorite', 'true');
+    if (filters.salary.min !== null) params.set('salaryMin', String(filters.salary.min));
+    if (filters.salary.max !== null) params.set('salaryMax', String(filters.salary.max));
     if (sortBy) params.set('sort', sortBy);
     if (currentPage) params.set('page', String(currentPage));
     if (limit) params.set('limit', String(limit));
@@ -417,6 +448,8 @@ const JobBoard: React.FC = () => {
     filters.tags,
     filters.date,
     filters.isFavorite,
+    filters.salary.min,
+    filters.salary.max,
     isInitialized,
     sortBy,
     currentPage,
@@ -434,13 +467,20 @@ const JobBoard: React.FC = () => {
         onChange={(e) => setSearchQueryInput(e.target.value)}
         className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300"
       />
-      {/* Filters Component */}
+      {/* Array Filters Component */}
       <ArrayFilters filters={filters} onFilterChange={setFilters} onClearAll={clearAllFilters} />
 
+      {/* Tags Filter */}
       <TagsFilter
         allTags={Array.from(new Set(allJobs.flatMap((job) => job.tags)))}
         selectedTags={filters.tags}
         onChange={(newTags) => setFilters((prev) => ({ ...prev, tags: newTags }))}
+      />
+
+      {/* Salary Filter */}
+      <SalaryFilter
+        salary={filters.salary}
+        onChange={(salary) => setFilters((prev) => ({ ...prev, salary }))}
       />
 
       {/* Active Filter Tags */}
@@ -657,6 +697,7 @@ const JobBoard: React.FC = () => {
               tags: selected.tags,
               date: selected.date || '',
               isFavorite: selected.isFavorite || false,
+              salary: { min: selected.salary?.min || null, max: selected.salary?.max || null },
             });
             setCurrentPage(selected.page || 1);
             if (selected.sortBy === 'newest' || selected.sortBy === 'oldest') {
@@ -724,6 +765,7 @@ const JobBoard: React.FC = () => {
             tags: filters.tags,
             date: filters.date,
             isFavorite: filters.isFavorite,
+            salary: { min: filters.salary.min, max: filters.salary.max },
             sortBy,
             page: currentPage,
             limit: limit,
