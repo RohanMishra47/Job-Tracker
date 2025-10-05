@@ -1,52 +1,17 @@
+import type { FilterState } from '../JobBoard';
 import { FILTER_GROUPS, type JobFiltersProps } from './types';
 
-export const JobFilters = ({
-  priorities: selectedPriorities,
-  jobTypes: selectedJobTypes,
-  statuses: selectedStatuses,
-  experienceLevel: selectedExperienceLevels,
-  sources: selectedSources,
-  date: selectedDate,
-  onFilterChange,
-  onClearAll,
-}: JobFiltersProps) => {
+export const ArrayFilters = ({ filters, onFilterChange, onClearAll }: JobFiltersProps) => {
   // Handle filter changes for any group
-  const handleFilterChange = (groupKey: string, value: string, isChecked: boolean) => {
+  const handleFilterChange = (groupKey: keyof FilterState, value: string, isChecked: boolean) => {
     onFilterChange({
-      priorities:
-        groupKey === 'priorities'
-          ? isChecked
-            ? [...selectedPriorities, value]
-            : selectedPriorities.filter((p) => p !== value)
-          : selectedPriorities,
-      jobTypes:
-        groupKey === 'jobTypes'
-          ? isChecked
-            ? [...selectedJobTypes, value]
-            : selectedJobTypes.filter((t) => t !== value)
-          : selectedJobTypes,
-      statuses:
-        groupKey === 'statuses'
-          ? isChecked
-            ? [...selectedStatuses, value]
-            : selectedStatuses.filter((s) => s !== value)
-          : selectedStatuses,
-      experienceLevel:
-        groupKey === 'experienceLevel'
-          ? isChecked
-            ? [...selectedExperienceLevels, value]
-            : selectedExperienceLevels.filter((e) => e !== value)
-          : selectedExperienceLevels,
-      sources:
-        groupKey === 'sources'
-          ? isChecked
-            ? [...selectedSources, value]
-            : selectedSources.filter((s) => s !== value)
-          : selectedSources,
-      date:
+      ...filters,
+      [groupKey]:
         groupKey === 'date'
           ? value // radios: just set the value
-          : selectedDate,
+          : isChecked
+            ? [...(filters[groupKey] as string[]), value]
+            : (filters[groupKey] as string[]).filter((v) => v !== value),
     });
   };
 
@@ -61,17 +26,9 @@ export const JobFilters = ({
           <div className={`flex gap-3 ${group.key === 'statuses' ? 'flex-wrap' : 'flex-col'}`}>
             {group.options.map((option) => {
               const isChecked =
-                group.key === 'priorities'
-                  ? selectedPriorities.includes(option.value)
-                  : group.key === 'jobTypes'
-                    ? selectedJobTypes.includes(option.value)
-                    : group.key === 'statuses'
-                      ? selectedStatuses.includes(option.value)
-                      : group.key === 'experienceLevel'
-                        ? selectedExperienceLevels.includes(option.value)
-                        : group.key === 'sources'
-                          ? selectedSources.includes(option.value)
-                          : selectedDate === option.value;
+                group.key === 'date'
+                  ? filters.date === option.value
+                  : (filters[group.key] as string[]).includes(option.value);
 
               return (
                 <label key={option.value} className="flex items-center gap-2 cursor-pointer">

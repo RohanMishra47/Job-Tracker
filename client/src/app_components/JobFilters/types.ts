@@ -1,3 +1,5 @@
+import type { FilterState } from '../JobBoard';
+
 // Types for JobFilters component
 export type FilterOption = {
   label: string;
@@ -5,26 +7,14 @@ export type FilterOption = {
 };
 
 export type FilterGroup = {
-  key: string;
+  key: keyof FilterState;
   label: string;
   options: FilterOption[];
 };
 
 export type JobFiltersProps = {
-  priorities: string[];
-  jobTypes: string[];
-  statuses: string[];
-  experienceLevel: string[];
-  sources: string[];
-  date: string; // e.g., 'next7', 'next30', 'overdue', 'none'
-  onFilterChange: (filters: {
-    priorities: string[];
-    jobTypes: string[];
-    statuses: string[];
-    experienceLevel: string[];
-    sources: string[];
-    date: string | '';
-  }) => void;
+  filters: FilterState; // ✅ one source of truth
+  onFilterChange: (filters: FilterState) => void;
   onClearAll: () => void;
 };
 

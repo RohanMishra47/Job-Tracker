@@ -165,6 +165,7 @@ export const getJobs = async (req: RequestWithUser, res: Response) => {
       priority,
       experienceLevel,
       sources,
+      tags,
       date,
       sortBy = "newest",
     } = req.query;
@@ -185,6 +186,7 @@ export const getJobs = async (req: RequestWithUser, res: Response) => {
         experienceLevel as string | string[]
       ),
       ...buildArrayFilter("source", sources as string | string[]),
+      ...buildArrayFilter("tags", tags as string | string[]),
     };
 
     console.log("Querying jobs with:", query);

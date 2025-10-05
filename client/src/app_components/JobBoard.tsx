@@ -5,7 +5,8 @@ import React, { useEffect, useMemo, useState } from 'react';
 import toast from 'react-hot-toast';
 import { api } from '../instances/axiosInstance';
 import JobColumn from './JobColumn';
-import { JobFilters } from './JobFilters/JobFilters';
+import { ArrayFilters } from './JobFilters/ArrayFilters';
+import { TagsFilter } from './JobFilters/TagsFilter';
 import { FILTER_GROUPS } from './JobFilters/types';
 
 // Types
@@ -40,18 +41,20 @@ type FilterPreset = {
   priorities: string[];
   experienceLevel: string[];
   sources: string[];
+  tags: string[];
   date?: string;
   sortBy: string;
   page: number;
   limit: number;
 };
 
-type FilterState = {
+export type FilterState = {
   priorities: string[];
   jobTypes: string[];
   statuses: string[];
   experienceLevel: string[];
   sources: string[];
+  tags: string[];
   date: string | '';
 };
 
@@ -68,6 +71,7 @@ const JobBoard: React.FC = () => {
     const priority = params.get('priority')?.split(',').filter(Boolean);
     const sort = params.get('sort') === 'oldest' ? 'oldest' : 'newest';
     const experienceLevel = params.get('experienceLevel')?.split(',').filter(Boolean);
+    const tags = params.get('tags')?.split(',').filter(Boolean);
     const date = params.get('date');
     const sources = params.get('sources')?.split(',').filter(Boolean);
     const page = params.get('page');
@@ -80,6 +84,7 @@ const JobBoard: React.FC = () => {
       priority?.length ||
       experienceLevel?.length ||
       sources?.length ||
+      tags?.length ||
       date ||
       sort ||
       page ||
@@ -92,6 +97,7 @@ const JobBoard: React.FC = () => {
         priority: priority || [],
         experienceLevel: experienceLevel || [],
         sources: sources || [],
+        tags: tags || [],
         date: date || '',
         sort: sort || 'newest',
         page: page ? parseInt(page, 10) : 1,
@@ -109,6 +115,7 @@ const JobBoard: React.FC = () => {
         priority: parsed.selectedPriorities || [],
         experienceLevel: parsed.selectedExperienceLevels || [],
         sources: parsed.selectedSources || [],
+        tags: parsed.selectedTags || [],
         date: parsed.date || '',
         sort: parsed.sortBy || 'newest',
         page: parsed.currentPage ? parseInt(parsed.currentPage, 10) : 1,
@@ -123,6 +130,7 @@ const JobBoard: React.FC = () => {
       priority: [],
       experienceLevel: [],
       sources: [],
+      tags: [],
       date: '',
       sort: 'newest',
       page: 1,
@@ -155,6 +163,7 @@ const JobBoard: React.FC = () => {
     statuses: initialFilters.status,
     experienceLevel: initialFilters.experienceLevel,
     sources: initialFilters.sources,
+    tags: initialFilters.tags,
     date: initialFilters.date,
   });
 
@@ -238,6 +247,7 @@ const JobBoard: React.FC = () => {
       statuses: [],
       experienceLevel: [],
       sources: [],
+      tags: [],
       date: '',
     });
     setSearchQuery('');
@@ -254,6 +264,7 @@ const JobBoard: React.FC = () => {
     filters.priorities.length === 0 &&
     filters.experienceLevel.length === 0 &&
     filters.sources.length === 0 &&
+    filters.tags.length === 0 &&
     filters.date === '' &&
     sortBy === 'newest';
 
@@ -272,6 +283,7 @@ const JobBoard: React.FC = () => {
         if (filters.experienceLevel.length)
           params.set('experienceLevel', filters.experienceLevel.join(','));
         if (filters.sources.length) params.set('sources', filters.sources.join(','));
+        if (filters.tags.length) params.set('tags', filters.tags.join(','));
         if (filters.date) params.set('date', filters.date);
         if (sortBy) params.set('sortBy', sortBy);
         if (currentPage) params.set('page', String(currentPage));
@@ -310,6 +322,7 @@ const JobBoard: React.FC = () => {
     filters.priorities,
     filters.experienceLevel,
     filters.sources,
+    filters.tags,
     filters.date,
     sortBy,
     currentPage,
@@ -336,6 +349,7 @@ const JobBoard: React.FC = () => {
       priorities: filters.priorities,
       experienceLevel: filters.experienceLevel,
       sources: filters.sources,
+      tags: filters.tags,
       date: filters.date,
       sortBy,
       currentPage,
@@ -350,6 +364,7 @@ const JobBoard: React.FC = () => {
     filters.priorities,
     filters.experienceLevel,
     filters.sources,
+    filters.tags,
     filters.date,
     sortBy,
     currentPage,
@@ -369,6 +384,7 @@ const JobBoard: React.FC = () => {
     if (filters.experienceLevel.length > 0)
       params.set('experienceLevel', filters.experienceLevel.join(','));
     if (filters.sources.length > 0) params.set('sources', filters.sources.join(','));
+    if (filters.tags.length > 0) params.set('tags', filters.tags.join(','));
     if (filters.date) params.set('date', filters.date);
     if (sortBy) params.set('sort', sortBy);
     if (currentPage) params.set('page', String(currentPage));
@@ -383,6 +399,7 @@ const JobBoard: React.FC = () => {
     filters.priorities,
     filters.experienceLevel,
     filters.sources,
+    filters.tags,
     filters.date,
     isInitialized,
     sortBy,
@@ -402,15 +419,12 @@ const JobBoard: React.FC = () => {
         className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300"
       />
       {/* Filters Component */}
-      <JobFilters
-        priorities={filters.priorities}
-        jobTypes={filters.jobTypes}
-        statuses={filters.statuses}
-        experienceLevel={filters.experienceLevel}
-        sources={filters.sources}
-        date={filters.date}
-        onFilterChange={setFilters}
-        onClearAll={clearAllFilters}
+      <ArrayFilters filters={filters} onFilterChange={setFilters} onClearAll={clearAllFilters} />
+
+      <TagsFilter
+        allTags={Array.from(new Set(allJobs.flatMap((job) => job.tags)))}
+        selectedTags={filters.tags}
+        onChange={(newTags) => setFilters((prev) => ({ ...prev, tags: newTags }))}
       />
 
       {/* Active Filter Tags */}
@@ -551,6 +565,27 @@ const JobBoard: React.FC = () => {
         </div>
       )}
 
+      {filters.tags.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2 mb-2">
+          <span className="font-semibold text-sm text-gray-500">Tags:</span>
+          {filters.tags.map((tag) => (
+            <span key={tag} className="tag transition-opacity duration-300 ease-in-out opacity-100">
+              {tag}
+              <button
+                onClick={() =>
+                  setFilters((prev) => ({
+                    ...prev,
+                    tags: prev.tags.filter((t) => t !== tag),
+                  }))
+                }
+              >
+                x
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+
       {filters.date && (
         <div className="flex flex-wrap items-center gap-2 mb-2">
           <span className="font-semibold text-sm text-gray-500">Date:</span>
@@ -603,6 +638,7 @@ const JobBoard: React.FC = () => {
               statuses: selected.statuses,
               experienceLevel: selected.experienceLevel,
               sources: selected.sources,
+              tags: selected.tags,
               date: selected.date || '',
             });
             setCurrentPage(selected.page || 1);
@@ -668,6 +704,7 @@ const JobBoard: React.FC = () => {
             priorities: filters.priorities,
             experienceLevel: filters.experienceLevel,
             sources: filters.sources,
+            tags: filters.tags,
             date: filters.date,
             sortBy,
             page: currentPage,
