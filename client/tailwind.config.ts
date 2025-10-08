@@ -4,9 +4,9 @@ export default {
   theme: {
     extend: {
       colors: {
-        'page-bg': '#F3F0EC',
+        'page-bg': '#f4f1eb',
         'card-bg': '#CAC8C9',
-        heading: '#343149',
+        heading: '#161528',
         'body-text': '#464353',
         subtle: '#ABA9AC',
       },
