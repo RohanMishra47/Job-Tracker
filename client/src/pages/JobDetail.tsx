@@ -53,20 +53,20 @@ const JobDetail = () => {
 
   if (loading)
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="text-lg font-medium text-gray-600">Loading...</div>
+      <div className="flex justify-center items-center min-h-screen bg-page-bg">
+        <div className="text-lg font-medium text-body-text">Loading...</div>
       </div>
     );
 
   if (error)
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
+      <div className="min-h-screen bg-page-bg flex flex-col items-center justify-center p-4">
         <div className="bg-white rounded-lg shadow-md p-6 max-w-md w-full text-center">
           <div className="text-red-500 text-xl font-semibold mb-2">Error</div>
-          <p className="text-gray-700 mb-6">{error}</p>
+          <p className="text-body-text mb-6">{error}</p>
           <Link
             to="/dashboard"
-            className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors duration-200"
+            className="inline-flex items-center px-4 py-2 bg-heading text-page-bg rounded-md hover:opacity-90 transition-opacity duration-200"
           >
             ← Back to dashboard
           </Link>
@@ -76,8 +76,8 @@ const JobDetail = () => {
 
   if (!job)
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-lg font-medium text-gray-600">Job not found.</div>
+      <div className="min-h-screen bg-page-bg flex items-center justify-center">
+        <div className="text-lg font-medium text-body-text">Job not found.</div>
       </div>
     );
 
@@ -102,18 +102,18 @@ const JobDetail = () => {
       case 'low':
         return 'bg-green-100 text-green-800';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-card-bg text-heading';
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-page-bg">
       <div className="max-w-6xl mx-auto px-4 py-8">
         {/* Header with back button */}
         <div className="mb-8">
           <Link
             to="/dashboard"
-            className="animated-underline inline-flex items-center text-blue-600 hover:text-blue-800 transition-colors duration-200 mb-6"
+            className="animated-underline inline-flex items-center text-heading hover:text-body-text transition-colors duration-200 mb-6"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -131,15 +131,15 @@ const JobDetail = () => {
           </Link>
 
           {/* Job title and company - highlighted section */}
-          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">{job.position}</h1>
-            <h2 className="text-xl text-gray-700 mb-4">{job.company}</h2>
+          <div className="bg-white rounded-xl shadow-sm p-6 border border-card-bg">
+            <h1 className="text-3xl font-bold text-heading mb-2">{job.position}</h1>
+            <h2 className="text-xl text-body-text mb-4">{job.company}</h2>
 
             <div className="flex flex-wrap gap-2">
-              <span className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm font-medium">
+              <span className="px-3 py-1 bg-heading/10 text-heading rounded-full text-sm font-medium">
                 {job.jobType}
               </span>
-              <span className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-medium">
+              <span className="px-3 py-1 bg-card-bg text-body-text rounded-full text-sm font-medium">
                 {job.location}
               </span>
               <span
@@ -152,37 +152,31 @@ const JobDetail = () => {
         </div>
 
         {/* Main content with two-column layout */}
-        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+        <div className="bg-white rounded-xl shadow-sm p-6 border border-card-bg">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Left column - labels */}
             <div className="space-y-4">
               <div>
-                <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </h3>
+                <h3 className="text-sm font-medium text-subtle uppercase tracking-wider">Status</h3>
               </div>
               <div>
-                <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider">
+                <h3 className="text-sm font-medium text-subtle uppercase tracking-wider">
                   Experience Level
                 </h3>
               </div>
               <div>
-                <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider">
-                  Salary
-                </h3>
+                <h3 className="text-sm font-medium text-subtle uppercase tracking-wider">Salary</h3>
               </div>
               <div>
-                <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider">
+                <h3 className="text-sm font-medium text-subtle uppercase tracking-wider">
                   Application Deadline
                 </h3>
               </div>
               <div>
-                <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider">
-                  Source
-                </h3>
+                <h3 className="text-sm font-medium text-subtle uppercase tracking-wider">Source</h3>
               </div>
               <div>
-                <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider">
+                <h3 className="text-sm font-medium text-subtle uppercase tracking-wider">
                   Application Link
                 </h3>
               </div>
@@ -191,16 +185,16 @@ const JobDetail = () => {
             {/* Right column - values */}
             <div className="space-y-4">
               <div>
-                <p className="text-gray-900">{job.status}</p>
+                <p className="text-heading">{job.status}</p>
               </div>
               <div>
-                <p className="text-gray-900 capitalize">{job.experienceLevel}</p>
+                <p className="text-heading capitalize">{job.experienceLevel}</p>
               </div>
               <div>
-                <p className="text-gray-900">{formatSalary(job.salary)}</p>
+                <p className="text-heading">{formatSalary(job.salary)}</p>
               </div>
               <div>
-                <p className="text-gray-900">
+                <p className="text-heading">
                   {job.deadline
                     ? new Date(job.deadline).toLocaleDateString('en-US', {
                         weekday: 'long',
@@ -212,14 +206,14 @@ const JobDetail = () => {
                 </p>
               </div>
               <div>
-                <p className="text-gray-900">{job.source}</p>
+                <p className="text-heading">{job.source}</p>
               </div>
               <div>
                 <a
                   href={job.applicationLink}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-blue-600 hover:text-blue-800 hover:underline transition-colors duration-200"
+                  className="text-heading hover:text-body-text hover:underline transition-colors duration-200"
                 >
                   Apply Now
                 </a>
@@ -229,15 +223,15 @@ const JobDetail = () => {
 
           {/* Tags section */}
           {job.tags && job.tags.length > 0 && (
-            <div className="mt-8 pt-6 border-t border-gray-100">
-              <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3">
+            <div className="mt-8 pt-6 border-t border-card-bg">
+              <h3 className="text-sm font-medium text-subtle uppercase tracking-wider mb-3">
                 Tags
               </h3>
               <div className="flex flex-wrap gap-2">
                 {job.tags.map((tag, index) => (
                   <span
                     key={index}
-                    className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm"
+                    className="px-3 py-1 bg-card-bg text-body-text rounded-full text-sm"
                   >
                     {tag}
                   </span>
@@ -247,20 +241,20 @@ const JobDetail = () => {
           )}
 
           {/* Description section */}
-          <div className="mt-8 pt-6 border-t border-gray-100">
-            <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3">
+          <div className="mt-8 pt-6 border-t border-card-bg">
+            <h3 className="text-sm font-medium text-subtle uppercase tracking-wider mb-3">
               Job Description
             </h3>
-            <p className="text-gray-700 whitespace-pre-line">{job.description}</p>
+            <p className="text-body-text whitespace-pre-line">{job.description}</p>
           </div>
 
           {/* Notes section */}
           {job.notes && (
-            <div className="mt-8 pt-6 border-t border-gray-100">
-              <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3">
+            <div className="mt-8 pt-6 border-t border-card-bg">
+              <h3 className="text-sm font-medium text-subtle uppercase tracking-wider mb-3">
                 Notes
               </h3>
-              <p className="text-gray-700 whitespace-pre-line">{job.notes}</p>
+              <p className="text-body-text whitespace-pre-line">{job.notes}</p>
             </div>
           )}
         </div>
