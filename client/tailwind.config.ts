@@ -4,7 +4,7 @@ export default {
   theme: {
     extend: {
       colors: {
-        'page-bg': '#f4f1eb',
+        'page-bg': '#e91e63',
         'card-bg': '#CAC8C9',
         heading: '#161528',
         'body-text': '#464353',
