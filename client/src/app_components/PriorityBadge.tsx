@@ -1,3 +1,4 @@
+import { capitalize } from '@/utils/capitalize';
 import { motion } from 'framer-motion';
 
 type PriorityLevel = 'low' | 'medium' | 'high' | number;
@@ -17,7 +18,7 @@ export function PriorityBadge({ level }: { level: PriorityLevel }) {
         typeof level === 'string' && colorMap[level] ? colorMap[level] : 'bg-gray-100 text-gray-800'
       }`}
     >
-      Priority: {typeof level === 'string' ? level.charAt(0).toUpperCase() + level.slice(1) : level}
+      Priority: {typeof level === 'string' ? capitalize(level) : 'N/A'}
     </motion.span>
   );
 }

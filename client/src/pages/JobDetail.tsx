@@ -1,5 +1,5 @@
-import { Badge } from '@/app_components/Badge';
 import { DetailCard } from '@/app_components/DetailCard';
+import InfoField from '@/app_components/InfoField';
 import { PriorityBadge } from '@/app_components/PriorityBadge';
 import { api } from '@/instances/axiosInstance';
 import { motion } from 'framer-motion';
@@ -100,18 +100,26 @@ const JobDetail = () => {
       transition={{ duration: 0.4, ease: 'easeOut' }}
       className="max-w-4xl mx-auto p-6 sm:p-8 rounded-3xl bg-white dark:bg-zinc-900 shadow-xl"
     >
+      {/* Top Section */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
-        className="flex flex-wrap gap-4 justify-between items-center p-4 bg-muted rounded-xl"
+        className="flex flex-wrap gap-6 justify-between items-start p-4 bg-muted rounded-xl"
       >
-        <Badge>Status: {job.status}</Badge>
-        <span className="font-semibold text-lg">{job.company}</span>
-        <span>{job.jobType}</span>
-        <span>{job.location}</span>
-        <PriorityBadge level={job.priority} />
+        {/* Company Name */}
+        <div className="text-2xl font-bold text-primary">{job.company}</div>
+
+        {/* Structured Fields */}
+        <div className="flex flex-wrap gap-4">
+          <InfoField label="Status" value={job.status} />
+          <InfoField label="Job Type" value={job.jobType} />
+          <InfoField label="Location" value={job.location} />
+          <InfoField label="Priority" value={<PriorityBadge level={job.priority} />} />
+        </div>
       </motion.div>
+
+      {/* Bottom Section */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-6">
         <DetailCard label="Experience Level" value={job.experienceLevel} />
         <DetailCard label="Salary" value={formatSalary(job.salary)} />
