@@ -1,3 +1,4 @@
+@config "../tailwind.config.ts";
 @import 'tailwindcss';
 @import 'tw-animate-css';
 
@@ -141,9 +142,4 @@
   .animated-underline:hover::after {
     transform: scaleX(1);
   }
-}
-
-:root {
-  --page-bg: #e91e63;
-  --heading: #161528;
 }

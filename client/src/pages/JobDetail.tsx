@@ -107,13 +107,13 @@ const JobDetail = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--page-bg)] py-8">
+    <div className="min-h-screen bg-page-bg py-8">
       <div className="max-w-6xl mx-auto px-4 py-8">
         {/* Header with back button */}
         <div className="mb-8">
           <Link
             to="/dashboard"
-            className="inline-flex items-center bg-heading text-page-bg hover:text-body-text transition-colors duration-200 mb-6"
+            className="inline-flex items-center bg-heading text-body-text hover:text-subtle transition-colors duration-200 mb-6"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -131,15 +131,15 @@ const JobDetail = () => {
           </Link>
 
           {/* Job title and company - highlighted section */}
-          <div className="bg-white rounded-xl shadow-sm p-6 border border-card-bg">
-            <h1 className="text-3xl font-bold text-heading mb-2">{job.position}</h1>
-            <h2 className="text-xl text-body-text mb-4">{job.company}</h2>
+          <div className="bg-subtle rounded-xl shadow-sm p-6 border border-card-bg">
+            <h1 className="text-3xl font-bold text-page-bg mb-2">{job.position}</h1>
+            <h2 className="text-xl text-page-bg mb-4">{job.company}</h2>
 
             <div className="flex flex-wrap gap-2">
-              <span className="px-3 py-1 bg-heading/10 text-heading rounded-full text-sm font-medium">
+              <span className="px-3 py-1 bg-subtle text-page-bg rounded-full text-sm font-medium">
                 {job.jobType}
               </span>
-              <span className="px-3 py-1 bg-card-bg text-body-text rounded-full text-sm font-medium">
+              <span className="px-3 py-1 bg-subtle text-page-bg rounded-full text-sm font-medium">
                 {job.location}
               </span>
               <span
@@ -152,31 +152,37 @@ const JobDetail = () => {
         </div>
 
         {/* Main content with two-column layout */}
-        <div className="bg-white rounded-xl shadow-sm p-6 border border-card-bg">
+        <div className="bg-subtle rounded-xl shadow-sm p-6 border border-card-bg">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Left column - labels */}
             <div className="space-y-4">
               <div>
-                <h3 className="text-sm font-medium text-subtle uppercase tracking-wider">Status</h3>
+                <h3 className="text-sm font-medium text-page-bg uppercase tracking-wider">
+                  Status
+                </h3>
               </div>
               <div>
-                <h3 className="text-sm font-medium text-subtle uppercase tracking-wider">
+                <h3 className="text-sm font-medium text-page-bg uppercase tracking-wider">
                   Experience Level
                 </h3>
               </div>
               <div>
-                <h3 className="text-sm font-medium text-subtle uppercase tracking-wider">Salary</h3>
+                <h3 className="text-sm font-medium text-page-bg uppercase tracking-wider">
+                  Salary
+                </h3>
               </div>
               <div>
-                <h3 className="text-sm font-medium text-subtle uppercase tracking-wider">
+                <h3 className="text-sm font-medium text-page-bg uppercase tracking-wider">
                   Application Deadline
                 </h3>
               </div>
               <div>
-                <h3 className="text-sm font-medium text-subtle uppercase tracking-wider">Source</h3>
+                <h3 className="text-sm font-medium text-page-bg uppercase tracking-wider">
+                  Source
+                </h3>
               </div>
               <div>
-                <h3 className="text-sm font-medium text-subtle uppercase tracking-wider">
+                <h3 className="text-sm font-medium text-page-bg uppercase tracking-wider">
                   Application Link
                 </h3>
               </div>
@@ -185,16 +191,16 @@ const JobDetail = () => {
             {/* Right column - values */}
             <div className="space-y-4">
               <div>
-                <p className="text-heading">{job.status}</p>
+                <p className="text-page-bg">{job.status}</p>
               </div>
               <div>
-                <p className="text-heading capitalize">{job.experienceLevel}</p>
+                <p className="text-page-bg capitalize">{job.experienceLevel}</p>
               </div>
               <div>
-                <p className="text-heading">{formatSalary(job.salary)}</p>
+                <p className="text-page-bg">{formatSalary(job.salary)}</p>
               </div>
               <div>
-                <p className="text-heading">
+                <p className="text-page-bg">
                   {job.deadline
                     ? new Date(job.deadline).toLocaleDateString('en-US', {
                         weekday: 'long',
@@ -206,14 +212,14 @@ const JobDetail = () => {
                 </p>
               </div>
               <div>
-                <p className="text-heading">{job.source}</p>
+                <p className="text-page-bg">{job.source}</p>
               </div>
               <div>
                 <a
                   href={job.applicationLink}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-heading hover:text-body-text hover:underline transition-colors duration-200"
+                  className="text-page-bg hover:text-body-text hover:underline transition-colors duration-200"
                 >
                   Apply Now
                 </a>
@@ -224,14 +230,14 @@ const JobDetail = () => {
           {/* Tags section */}
           {job.tags && job.tags.length > 0 && (
             <div className="mt-8 pt-6 border-t border-card-bg">
-              <h3 className="text-sm font-medium text-subtle uppercase tracking-wider mb-3">
+              <h3 className="text-sm font-medium text-page-bg uppercase tracking-wider mb-3">
                 Tags
               </h3>
               <div className="flex flex-wrap gap-2">
                 {job.tags.map((tag, index) => (
                   <span
                     key={index}
-                    className="px-3 py-1 bg-card-bg text-body-text rounded-full text-sm"
+                    className="px-3 py-1 bg-card-bg text-page-bg rounded-full text-sm"
                   >
                     {tag}
                   </span>
@@ -242,7 +248,7 @@ const JobDetail = () => {
 
           {/* Description section */}
           <div className="mt-8 pt-6 border-t border-card-bg">
-            <h3 className="text-sm font-medium text-subtle uppercase tracking-wider mb-3">
+            <h3 className="text-sm font-medium text-page-bg uppercase tracking-wider mb-3">
               Job Description
             </h3>
             <p className="text-body-text whitespace-pre-line">{job.description}</p>
@@ -251,10 +257,10 @@ const JobDetail = () => {
           {/* Notes section */}
           {job.notes && (
             <div className="mt-8 pt-6 border-t border-card-bg">
-              <h3 className="text-sm font-medium text-subtle uppercase tracking-wider mb-3">
+              <h3 className="text-sm font-medium text-page-bg uppercase tracking-wider mb-3">
                 Notes
               </h3>
-              <p className="text-body-text whitespace-pre-line">{job.notes}</p>
+              <p className="text-page-bg whitespace-pre-line">{job.notes}</p>
             </div>
           )}
         </div>
