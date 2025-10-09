@@ -1,3 +1,4 @@
+import apiURL from '@/utils/api';
 import axios, { AxiosError } from 'axios';
 
 export const restoreTokenFromStorage = () => {
@@ -15,12 +16,12 @@ export const setAccessToken = (t: string) => {
 };
 
 export const api = axios.create({
-  baseURL: `${import.meta.env.VITE_API_BASE}/api`,
+  baseURL: `${apiURL}/api`,
   withCredentials: true,
 });
 
 export const refreshClient = axios.create({
-  baseURL: `${import.meta.env.VITE_API_BASE}/api`,
+  baseURL: `${apiURL}/api`,
   withCredentials: true,
 });
 

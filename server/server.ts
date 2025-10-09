@@ -15,6 +15,7 @@ const app: Application = express();
 app.use(cookieParser());
 
 const allowedOrigins = [
+  "http://localhost:5173",
   "https://job-tracker-2ub.pages.dev",
   "https://job-tracker-dev.pages.dev",
   /^https:\/\/.*\.job-tracker-2ub\.pages\.dev$/, // previews for production

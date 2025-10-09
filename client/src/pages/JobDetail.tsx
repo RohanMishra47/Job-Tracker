@@ -1,4 +1,8 @@
+import { Badge } from '@/app_components/Badge';
+import { DetailCard } from '@/app_components/DetailCard';
+import { PriorityBadge } from '@/app_components/PriorityBadge';
 import { api } from '@/instances/axiosInstance';
+import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
@@ -89,183 +93,47 @@ const JobDetail = () => {
     return `$${salary.toLocaleString()}`;
   };
 
-  // Format priority with color coding
-  const getPriorityClass = (priority: 'low' | 'medium' | 'high' | number) => {
-    if (typeof priority === 'number') {
-      return 'bg-blue-100 text-blue-800';
-    }
-    switch (priority) {
-      case 'high':
-        return 'bg-red-100 text-red-800';
-      case 'medium':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'low':
-        return 'bg-green-100 text-green-800';
-      default:
-        return 'bg-card-bg text-heading';
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-page-bg py-8">
-      <div className="max-w-6xl mx-auto px-4 py-8">
-        {/* Header with back button */}
-        <div className="mb-8">
-          <Link
-            to="/dashboard"
-            className="inline-flex items-center bg-heading text-body-text hover:text-subtle transition-colors duration-200 mb-6"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5 mr-1"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-            >
-              <path
-                fillRule="evenodd"
-                d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
-                clipRule="evenodd"
-              />
-            </svg>
-            Back to dashboard
-          </Link>
-
-          {/* Job title and company - highlighted section */}
-          <div className="bg-subtle rounded-xl shadow-sm p-6 border border-card-bg">
-            <h1 className="text-3xl font-bold text-page-bg mb-2">{job.position}</h1>
-            <h2 className="text-xl text-page-bg mb-4">{job.company}</h2>
-
-            <div className="flex flex-wrap gap-2">
-              <span className="px-3 py-1 bg-subtle text-page-bg rounded-full text-sm font-medium">
-                {job.jobType}
-              </span>
-              <span className="px-3 py-1 bg-subtle text-page-bg rounded-full text-sm font-medium">
-                {job.location}
-              </span>
-              <span
-                className={`px-3 py-1 rounded-full text-sm font-medium ${getPriorityClass(job.priority)}`}
-              >
-                Priority: {job.priority}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Main content with two-column layout */}
-        <div className="bg-subtle rounded-xl shadow-sm p-6 border border-card-bg">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Left column - labels */}
-            <div className="space-y-4">
-              <div>
-                <h3 className="text-sm font-medium text-page-bg uppercase tracking-wider">
-                  Status
-                </h3>
-              </div>
-              <div>
-                <h3 className="text-sm font-medium text-page-bg uppercase tracking-wider">
-                  Experience Level
-                </h3>
-              </div>
-              <div>
-                <h3 className="text-sm font-medium text-page-bg uppercase tracking-wider">
-                  Salary
-                </h3>
-              </div>
-              <div>
-                <h3 className="text-sm font-medium text-page-bg uppercase tracking-wider">
-                  Application Deadline
-                </h3>
-              </div>
-              <div>
-                <h3 className="text-sm font-medium text-page-bg uppercase tracking-wider">
-                  Source
-                </h3>
-              </div>
-              <div>
-                <h3 className="text-sm font-medium text-page-bg uppercase tracking-wider">
-                  Application Link
-                </h3>
-              </div>
-            </div>
-
-            {/* Right column - values */}
-            <div className="space-y-4">
-              <div>
-                <p className="text-page-bg">{job.status}</p>
-              </div>
-              <div>
-                <p className="text-page-bg capitalize">{job.experienceLevel}</p>
-              </div>
-              <div>
-                <p className="text-page-bg">{formatSalary(job.salary)}</p>
-              </div>
-              <div>
-                <p className="text-page-bg">
-                  {job.deadline
-                    ? new Date(job.deadline).toLocaleDateString('en-US', {
-                        weekday: 'long',
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                      })
-                    : 'No deadline'}
-                </p>
-              </div>
-              <div>
-                <p className="text-page-bg">{job.source}</p>
-              </div>
-              <div>
-                <a
-                  href={job.applicationLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-page-bg hover:text-body-text hover:underline transition-colors duration-200"
-                >
-                  Apply Now
-                </a>
-              </div>
-            </div>
-          </div>
-
-          {/* Tags section */}
-          {job.tags && job.tags.length > 0 && (
-            <div className="mt-8 pt-6 border-t border-card-bg">
-              <h3 className="text-sm font-medium text-page-bg uppercase tracking-wider mb-3">
-                Tags
-              </h3>
-              <div className="flex flex-wrap gap-2">
-                {job.tags.map((tag, index) => (
-                  <span
-                    key={index}
-                    className="px-3 py-1 bg-card-bg text-page-bg rounded-full text-sm"
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Description section */}
-          <div className="mt-8 pt-6 border-t border-card-bg">
-            <h3 className="text-sm font-medium text-page-bg uppercase tracking-wider mb-3">
-              Job Description
-            </h3>
-            <p className="text-body-text whitespace-pre-line">{job.description}</p>
-          </div>
-
-          {/* Notes section */}
-          {job.notes && (
-            <div className="mt-8 pt-6 border-t border-card-bg">
-              <h3 className="text-sm font-medium text-page-bg uppercase tracking-wider mb-3">
-                Notes
-              </h3>
-              <p className="text-page-bg whitespace-pre-line">{job.notes}</p>
-            </div>
-          )}
-        </div>
+    <motion.div
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.4, ease: 'easeOut' }}
+      className="max-w-4xl mx-auto p-6 sm:p-8 rounded-3xl bg-white dark:bg-zinc-900 shadow-xl"
+    >
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className="flex flex-wrap gap-4 justify-between items-center p-4 bg-muted rounded-xl"
+      >
+        <Badge>Status: {job.status}</Badge>
+        <span className="font-semibold text-lg">{job.company}</span>
+        <span>{job.jobType}</span>
+        <span>{job.location}</span>
+        <PriorityBadge level={job.priority} />
+      </motion.div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-6">
+        <DetailCard label="Experience Level" value={job.experienceLevel} />
+        <DetailCard label="Salary" value={formatSalary(job.salary)} />
+        <DetailCard
+          label="Deadline"
+          value={
+            job.deadline
+              ? new Date(job.deadline).toLocaleDateString('en-US', {
+                  weekday: 'long',
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                })
+              : 'No deadline'
+          }
+        />
+        <DetailCard label="Tags" value={job.tags.join(', ')} />
+        <DetailCard label="Application Link" value={job.applicationLink} />
+        <DetailCard label="Job Description" value={job.description} />
+        <DetailCard label="Job Notes" value={job.notes} />
       </div>
-    </div>
+    </motion.div>
   );
 };
 
