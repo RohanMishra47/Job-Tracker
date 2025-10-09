@@ -107,7 +107,7 @@ const JobDetail = () => {
   };
 
   return (
-    <div className="min-h-screen bg-page-bg">
+    <div className="min-h-screen bg-[var(--page-bg)] py-8">
       <div className="max-w-6xl mx-auto px-4 py-8">
         {/* Header with back button */}
         <div className="mb-8">
