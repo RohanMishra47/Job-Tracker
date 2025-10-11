@@ -3,7 +3,7 @@ import { capitalize } from '@/utils/capitalize';
 function InfoField({ label, value }: { label: string; value: React.ReactNode }) {
   const isString = typeof value === 'string';
   return (
-    <div className="flex flex-col gap-1 min-w-[120px]">
+    <div className="flex flex-col gap-1 min-w-[120px] text-center">
       <span className="text-sm text-muted-foreground font-medium">{label}</span>
       <div className="border-b border-border w-full" />
       <span className="text-base font-semibold text-foreground">

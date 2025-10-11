@@ -1,8 +1,12 @@
 import { DetailCard } from '@/app_components/DetailCard';
+import DetailGroup from '@/app_components/DetailGroup';
 import InfoField from '@/app_components/InfoField';
 import { PriorityBadge } from '@/app_components/PriorityBadge';
+import Section from '@/app_components/Section';
 import { api } from '@/instances/axiosInstance';
 import { motion } from 'framer-motion';
+import { capitalize } from 'lodash';
+import { Building2, Star } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
@@ -105,13 +109,34 @@ const JobDetail = () => {
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
-        className="flex flex-wrap gap-6 justify-between items-start p-4 bg-muted rounded-xl"
+        className="flex flex-wrap gap-4 p-4 bg-muted rounded-xl"
       >
-        {/* Company Name */}
-        <div className="text-2xl font-bold text-primary">{job.company}</div>
+        {/* Company Name and logo*/}
+        <div className="w-full flex justify-center items-center gap-2">
+          <Building2 className="w-6 h-6 text-muted-foreground" />
+          <span className="text-2xl font-bold text-primary">{job.company}</span>
+          {job.isFavorite && (
+            <motion.div
+              whileHover={{
+                y: -10,
+                rotate: 360,
+                scale: 1.2,
+              }}
+              transition={{
+                type: 'spring',
+                stiffness: 300,
+                damping: 15,
+              }}
+              className="inline-block"
+            >
+              <Star className="w-6 h-6 fill-yellow-400 stroke-yellow-600" />
+            </motion.div>
+          )}
+        </div>
+        <div className="border-b border-border w-full" />
 
         {/* Structured Fields */}
-        <div className="flex flex-wrap gap-4">
+        <div className="flex flex-wrap gap-4 justify-evenly w-full">
           <InfoField label="Status" value={job.status} />
           <InfoField label="Job Type" value={job.jobType} />
           <InfoField label="Location" value={job.location} />
@@ -120,26 +145,53 @@ const JobDetail = () => {
       </motion.div>
 
       {/* Bottom Section */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-6">
-        <DetailCard label="Experience Level" value={job.experienceLevel} />
-        <DetailCard label="Salary" value={formatSalary(job.salary)} />
-        <DetailCard
-          label="Deadline"
-          value={
-            job.deadline
-              ? new Date(job.deadline).toLocaleDateString('en-US', {
-                  weekday: 'long',
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                })
-              : 'No deadline'
-          }
-        />
-        <DetailCard label="Tags" value={job.tags.join(', ')} />
-        <DetailCard label="Application Link" value={job.applicationLink} />
-        <DetailCard label="Job Description" value={job.description} />
-        <DetailCard label="Job Notes" value={job.notes} />
+      <div className="space-y-6 mt-6">
+        <div className="max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8">
+            <div>
+              <Section title="Job Info">
+                <DetailGroup
+                  items={[
+                    { label: 'Experience Level', value: capitalize(job.experienceLevel) },
+                    { label: 'Salary', value: formatSalary(job.salary) },
+                    {
+                      label: 'Deadline',
+                      value: job.deadline
+                        ? new Date(job.deadline).toLocaleDateString('en-US', {
+                            weekday: 'long',
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                          })
+                        : 'No deadline',
+                    },
+                  ]}
+                />
+              </Section>
+            </div>
+
+            <div>
+              <Section title="Application Details">
+                <DetailGroup
+                  items={[
+                    { label: 'Tags', value: job.tags.join(', ') },
+                    { label: 'Source', value: job.source },
+                    {
+                      label: 'Application Link',
+                      value: job.applicationLink,
+                      isLink: true,
+                    },
+                  ]}
+                />
+              </Section>
+            </div>
+          </div>
+        </div>
+
+        <Section title="Notes">
+          <DetailCard label="Job Description" value={job.description} />
+          <DetailCard label="Job Notes" value={job.notes} />
+        </Section>
       </div>
     </motion.div>
   );
