@@ -1,9 +1,10 @@
+import { type SignUpFormData, signUpSchema } from '@/schemas/authSchema';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 const Register = () => {
-  const [form, setForm] = useState({ name: '', email: '', password: '' });
+  const [form, setForm] = useState<SignUpFormData>({ name: '', email: '', password: '' });
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -16,6 +17,12 @@ const Register = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    const result = signUpSchema.safeParse(form);
+    if (!result.success) {
+      setError(result.error.issues[0].message);
+      return;
+    }
     setIsLoading(true);
 
     try {

@@ -1,3 +1,4 @@
+import { signInSchema, type SignInFormData } from '@/schemas/authSchema';
 import axios from 'axios';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useState } from 'react';
@@ -5,7 +6,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { api, setAccessToken } from '../instances/axiosInstance';
 
 const Login = () => {
-  const [form, setForm] = useState({ email: '', password: '' });
+  const [form, setForm] = useState<SignInFormData>({ email: '', password: '' });
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -18,6 +19,13 @@ const Login = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    const result = signInSchema.safeParse(form);
+    if (!result.success) {
+      setError(result.error.issues[0].message);
+      return;
+    }
+
     setIsLoading(true);
 
     try {
