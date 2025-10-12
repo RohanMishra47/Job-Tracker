@@ -116,21 +116,26 @@ const JobDetail = () => {
           <Building2 className="w-6 h-6 text-muted-foreground" />
           <span className="text-2xl font-bold text-primary">{job.company}</span>
           {job.isFavorite && (
-            <motion.div
-              whileHover={{
-                y: -10,
-                rotate: 360,
-                scale: 1.2,
-              }}
-              transition={{
-                type: 'spring',
-                stiffness: 300,
-                damping: 15,
-              }}
-              className="inline-block"
-            >
-              <Star className="w-6 h-6 fill-yellow-400 stroke-yellow-600" />
-            </motion.div>
+            <div className="relative inline-block group w-[100px] h-6">
+              {/* Star Icon */}
+              <motion.div
+                whileHover={{ scale: 1.2, boxShadow: '0 0 8px #facc15' }}
+                transition={{ type: 'spring', stiffness: 300, damping: 15 }}
+                className="absolute left-0 top-0"
+              >
+                <Star className="w-6 h-6 fill-yellow-400 stroke-yellow-600" />
+              </motion.div>
+
+              {/* Sliding Text */}
+              <motion.span
+                initial={{ x: -10, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                transition={{ duration: 0.4, ease: 'easeOut' }}
+                className="absolute left-8 top-0 text-sm font-medium text-yellow-700 group-hover:inline-block hidden"
+              >
+                Favorite
+              </motion.span>
+            </div>
           )}
         </div>
         <div className="border-b border-border w-full" />
