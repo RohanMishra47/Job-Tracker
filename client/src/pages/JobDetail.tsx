@@ -1,6 +1,7 @@
 import { DetailCard } from '@/app_components/DetailCard';
 import DetailGroup from '@/app_components/DetailGroup';
 import InfoField from '@/app_components/InfoField';
+import Navbar from '@/app_components/Navbar';
 import { PriorityBadge } from '@/app_components/PriorityBadge';
 import Section from '@/app_components/Section';
 import { api } from '@/instances/axiosInstance';
@@ -98,107 +99,110 @@ const JobDetail = () => {
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.4, ease: 'easeOut' }}
-      className="max-w-4xl mx-auto p-6 sm:p-8 rounded-3xl bg-white dark:bg-zinc-900 shadow-xl"
-    >
-      {/* Top Section */}
+    <>
+      <Navbar />
       <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-        className="flex flex-wrap gap-4 p-4 bg-muted rounded-xl"
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.4, ease: 'easeOut' }}
+        className="max-w-4xl mx-auto p-6 sm:p-8 rounded-3xl bg-white dark:bg-zinc-900 shadow-xl"
       >
-        {/* Company Name and logo*/}
-        <div className="w-full flex justify-center items-center gap-2">
-          <Building2 className="w-6 h-6 text-muted-foreground" />
-          <span className="text-2xl font-bold text-primary">{job.company}</span>
-          {job.isFavorite && (
-            <div className="relative inline-block group w-[100px] h-6">
-              {/* Star Icon */}
-              <motion.div
-                whileHover={{ scale: 1.2, boxShadow: '0 0 8px #facc15' }}
-                transition={{ type: 'spring', stiffness: 300, damping: 15 }}
-                className="absolute left-0 top-0"
-              >
-                <Star className="w-6 h-6 fill-yellow-400 stroke-yellow-600" />
-              </motion.div>
+        {/* Top Section */}
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="flex flex-wrap gap-4 p-4 bg-muted rounded-xl"
+        >
+          {/* Company Name and logo*/}
+          <div className="w-full flex justify-center items-center gap-2">
+            <Building2 className="w-6 h-6 text-muted-foreground" />
+            <span className="text-2xl font-bold text-primary">{job.company}</span>
+            {job.isFavorite && (
+              <div className="relative inline-block group w-[100px] h-6">
+                {/* Star Icon */}
+                <motion.div
+                  whileHover={{ scale: 1.2, boxShadow: '0 0 8px #facc15' }}
+                  transition={{ type: 'spring', stiffness: 300, damping: 15 }}
+                  className="absolute left-0 top-0"
+                >
+                  <Star className="w-6 h-6 fill-yellow-400 stroke-yellow-600" />
+                </motion.div>
 
-              {/* Sliding Text */}
-              <motion.span
-                initial={{ x: -10, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                transition={{ duration: 0.4, ease: 'easeOut' }}
-                className="absolute left-8 top-0 text-sm font-medium text-yellow-700 group-hover:inline-block hidden"
-              >
-                Favorite
-              </motion.span>
-            </div>
-          )}
-        </div>
-        <div className="border-b border-border w-full" />
+                {/* Sliding Text */}
+                <motion.span
+                  initial={{ x: -10, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ duration: 0.4, ease: 'easeOut' }}
+                  className="absolute left-8 top-0 text-sm font-medium text-yellow-700 group-hover:inline-block hidden"
+                >
+                  Favorite
+                </motion.span>
+              </div>
+            )}
+          </div>
+          <div className="border-b border-border w-full" />
 
-        {/* Structured Fields */}
-        <div className="flex flex-wrap gap-4 justify-evenly w-full">
-          <InfoField label="Status" value={job.status} />
-          <InfoField label="Job Type" value={job.jobType} />
-          <InfoField label="Location" value={job.location} />
-          <InfoField label="Priority" value={<PriorityBadge level={job.priority} />} />
-        </div>
-      </motion.div>
+          {/* Structured Fields */}
+          <div className="flex flex-wrap gap-4 justify-evenly w-full">
+            <InfoField label="Status" value={job.status} />
+            <InfoField label="Job Type" value={job.jobType} />
+            <InfoField label="Location" value={job.location} />
+            <InfoField label="Priority" value={<PriorityBadge level={job.priority} />} />
+          </div>
+        </motion.div>
 
-      {/* Bottom Section */}
-      <div className="space-y-6 mt-6">
-        <div className="max-w-5xl mx-auto">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8">
-            <div>
-              <Section title="Job Info">
-                <DetailGroup
-                  items={[
-                    { label: 'Experience Level', value: capitalize(job.experienceLevel) },
-                    { label: 'Salary', value: formatSalary(job.salary) },
-                    {
-                      label: 'Deadline',
-                      value: job.deadline
-                        ? new Date(job.deadline).toLocaleDateString('en-US', {
-                            weekday: 'long',
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric',
-                          })
-                        : 'No deadline',
-                    },
-                  ]}
-                />
-              </Section>
-            </div>
+        {/* Bottom Section */}
+        <div className="space-y-6 mt-6">
+          <div className="max-w-5xl mx-auto">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8">
+              <div>
+                <Section title="Job Info">
+                  <DetailGroup
+                    items={[
+                      { label: 'Experience Level', value: capitalize(job.experienceLevel) },
+                      { label: 'Salary', value: formatSalary(job.salary) },
+                      {
+                        label: 'Deadline',
+                        value: job.deadline
+                          ? new Date(job.deadline).toLocaleDateString('en-US', {
+                              weekday: 'long',
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric',
+                            })
+                          : 'No deadline',
+                      },
+                    ]}
+                  />
+                </Section>
+              </div>
 
-            <div>
-              <Section title="Application Details">
-                <DetailGroup
-                  items={[
-                    { label: 'Tags', value: job.tags.join(', ') },
-                    { label: 'Source', value: job.source },
-                    {
-                      label: 'Application Link',
-                      value: job.applicationLink,
-                      isLink: true,
-                    },
-                  ]}
-                />
-              </Section>
+              <div>
+                <Section title="Application Details">
+                  <DetailGroup
+                    items={[
+                      { label: 'Tags', value: job.tags.join(', ') },
+                      { label: 'Source', value: job.source },
+                      {
+                        label: 'Application Link',
+                        value: job.applicationLink,
+                        isLink: true,
+                      },
+                    ]}
+                  />
+                </Section>
+              </div>
             </div>
           </div>
-        </div>
 
-        <Section title="Notes">
-          <DetailCard label="Job Description" value={job.description} />
-          <DetailCard label="Job Notes" value={job.notes} />
-        </Section>
-      </div>
-    </motion.div>
+          <Section title="Notes">
+            <DetailCard label="Job Description" value={job.description} />
+            <DetailCard label="Job Notes" value={job.notes} />
+          </Section>
+        </div>
+      </motion.div>
+    </>
   );
 };
 
