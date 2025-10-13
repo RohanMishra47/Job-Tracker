@@ -7,6 +7,7 @@ import { api } from '../instances/axiosInstance';
 import JobColumn from './JobColumn';
 import { ArrayFilters } from './JobFilters/ArrayFilters';
 import { SalaryFilter } from './JobFilters/SalaryFilter';
+import { SearchBar } from './JobFilters/SearchBarFilter';
 import { TagsFilter } from './JobFilters/TagsFilter';
 import { FILTER_GROUPS } from './JobFilters/types';
 
@@ -460,13 +461,7 @@ const JobBoard: React.FC = () => {
   return (
     <div>
       {/* Search Input */}
-      <input
-        type="text"
-        placeholder="Search by company or position"
-        value={searchQueryInput}
-        onChange={(e) => setSearchQueryInput(e.target.value)}
-        className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300"
-      />
+      <SearchBar value={searchQueryInput} onChange={setSearchQueryInput} />
       {/* Array Filters Component */}
       <ArrayFilters filters={filters} onFilterChange={setFilters} onClearAll={clearAllFilters} />
 
