@@ -1,23 +1,29 @@
 import Select, { type MultiValue, type StylesConfig } from 'react-select';
 
 type TagsFilterProps = {
-  allTags: string[];
-  selectedTags: string[];
-  onChange: (tags: string[]) => void;
+  allTags: string[]; // List of all available tags
+  selectedTags: string[]; // List of currently selected tags
+  onChange: (tags: string[]) => void; // Callback to update selected tags when user interacts
 };
 
-type OptionType = { label: string; value: string };
+type OptionType = { label: string; value: string }; // Type for react-select options
 
 export function TagsFilter({ allTags, selectedTags, onChange }: TagsFilterProps) {
+  // Component for filterring jobs by tags
+  // Transform tags into react-select options
   const options = allTags.map((tag) => ({ label: tag, value: tag }));
 
+  // Determine which options are currently selected
   const selectedOptions = options.filter((opt) => selectedTags.includes(opt.value));
 
+  // Handle changes in selection
   const handleChange = (selected: MultiValue<OptionType>) => {
+    // selected is a parameter of type MultiValue<OptionType>, which means: It could be an array of { label, value } objects.
     const values = selected ? selected.map((opt: OptionType) => opt.value) : [];
     onChange(values);
   };
 
+  // Custom styles for react-select to match the application's design
   const customStyles: StylesConfig<OptionType, true> = {
     control: (base) => ({
       ...base,
@@ -118,15 +124,15 @@ export function TagsFilter({ allTags, selectedTags, onChange }: TagsFilterProps)
         Tags
       </label>
       <Select
-        isMulti
-        options={options}
-        value={selectedOptions}
-        onChange={handleChange}
+        isMulti // Enable multi-select
+        options={options} // All available tag options
+        value={selectedOptions} // Currently selected options
+        onChange={handleChange} // Handle selection changes
         placeholder="Select tags..."
-        styles={customStyles}
-        classNamePrefix="react-select"
-        isClearable
-        isSearchable
+        styles={customStyles} // Apply custom styles
+        classNamePrefix="react-select" // Prefix for custom class names
+        isClearable // Enable clearable
+        isSearchable // Enable search functionality
       />
     </div>
   );
