@@ -6,6 +6,7 @@ export const ArrayFilters = ({ filters, onFilterChange, onClearAll }: JobFilters
   const [open, setOpen] = useState(true);
   const filterRef = useRef<HTMLDivElement>(null);
 
+  // Smooth scroll into view when opening filters
   const handleToggleFilters = (isOpening: boolean) => {
     setOpen(isOpening);
     if (isOpening && filterRef.current) {
@@ -15,7 +16,7 @@ export const ArrayFilters = ({ filters, onFilterChange, onClearAll }: JobFilters
     }
   };
 
-  // Logic unchanged
+  // Handle changes for checkboxes and radio buttons
   const handleFilterChange = (
     groupKey: keyof FilterState,
     value: string | boolean,
@@ -39,9 +40,15 @@ export const ArrayFilters = ({ filters, onFilterChange, onClearAll }: JobFilters
 
   const activeCount =
     (Array.isArray(filters.statuses) ? filters.statuses.length : 0) +
+    (Array.isArray(filters.priorities) ? filters.priorities.length : 0) +
+    (Array.isArray(filters.sources) ? filters.sources.length : 0) +
+    (Array.isArray(filters.jobTypes) ? filters.jobTypes.length : 0) +
+    (Array.isArray(filters.experienceLevel) ? filters.experienceLevel.length : 0) +
     (Array.isArray(filters.tags) ? filters.tags.length : 0) +
     (filters.date ? 1 : 0) +
-    (filters.isFavorite ? 1 : 0);
+    (filters.isFavorite ? 1 : 0) +
+    (filters.salary.min ? 1 : 0) +
+    (filters.salary.max ? 1 : 0);
 
   return (
     <>
