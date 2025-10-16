@@ -125,6 +125,7 @@ export const FILTER_CONFIG = {
     label: 'Favorites',
     isArray: false,
   },
+  salary: { key: 'salary', label: 'Salary', isArray: false },
 } as const;
 
 export const DATE_LABELS: Record<string, string> = {

@@ -56,8 +56,6 @@ export const ActiveFilters = ({
     <div className="space-y-2">
       {Object.entries(FILTER_CONFIG).map(([filterId, config]) => {
         const rawValue = getFilterValue(config.key);
-        // console.log('Date rawValue:', rawValue);
-        // console.log('filters.date:', filters.date);
         let value: string | string[] = '';
 
         if (typeof rawValue === 'string') {
