@@ -5,6 +5,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import toast from 'react-hot-toast';
 import { api } from '../instances/axiosInstance';
 import JobColumn from './JobColumn';
+import { ActiveFilters } from './JobFilters/ActiveFilters';
 import { ArrayFilters } from './JobFilters/ArrayFilters';
 import { SalaryFilter } from './JobFilters/SalaryFilter';
 import { SearchBar } from './JobFilters/SearchBarFilter';
@@ -479,182 +480,14 @@ const JobBoard: React.FC = () => {
       />
 
       {/* Active Filter Tags */}
-      {searchQuery && (
-        <div className="flex items-center gap-2 mb-2">
-          <span className="font-semibold text-sm text-gray-500">Search:</span>
-          <span className="tag transition-opacity duration-300 ease-in-out opacity-100">
-            {searchQuery}
-            <button
-              onClick={() => {
-                setSearchQuery('');
-                setSearchQueryInput(''); // Also clear the input
-              }}
-            >
-              x
-            </button>
-          </span>
-        </div>
-      )}
-
-      {filters.statuses.length > 0 && (
-        <div className="flex flex-wrap items-center gap-2 mb-2">
-          <span className="font-semibold text-sm text-gray-500">Status:</span>
-          {filters.statuses.map((status) => (
-            <span
-              key={status}
-              className="tag transition-opacity duration-300 ease-in-out opacity-100"
-            >
-              {status}
-              <button
-                onClick={() =>
-                  setFilters((prev) => ({
-                    ...prev,
-                    statuses: prev.statuses.filter((s) => s !== status),
-                  }))
-                }
-              >
-                x
-              </button>
-            </span>
-          ))}
-        </div>
-      )}
-
-      {filters.jobTypes.length > 0 && (
-        <div className="flex flex-wrap items-center gap-2 mb-2">
-          <span className="font-semibold text-sm text-gray-500">Job Type:</span>
-          {filters.jobTypes.map((type) => (
-            <span
-              key={type}
-              className="tag transition-opacity duration-300 ease-in-out opacity-100"
-            >
-              {type}
-              <button
-                onClick={() =>
-                  setFilters((prev) => ({
-                    ...prev,
-                    jobTypes: prev.jobTypes.filter((t) => t !== type),
-                  }))
-                }
-              >
-                ×
-              </button>
-            </span>
-          ))}
-        </div>
-      )}
-
-      {filters.priorities.length > 0 && (
-        <div className="flex flex-wrap items-center gap-2 mb-2">
-          <span className="font-semibold text-sm text-gray-500">Priority:</span>
-          {filters.priorities.map((priority) => (
-            <span
-              key={priority}
-              className="tag transition-opacity duration-300 ease-in-out opacity-100"
-            >
-              {priority}
-              <button
-                onClick={() =>
-                  setFilters((prev) => ({
-                    ...prev,
-                    priorities: prev.priorities.filter((p) => p !== priority),
-                  }))
-                }
-              >
-                x
-              </button>
-            </span>
-          ))}
-        </div>
-      )}
-
-      {filters.experienceLevel.length > 0 && (
-        <div className="flex flex-wrap items-center gap-2 mb-2">
-          <span className="font-semibold text-sm text-gray-500">Experience Level:</span>
-          {filters.experienceLevel.map((level) => (
-            <span
-              key={level}
-              className="tag transition-opacity duration-300 ease-in-out opacity-100"
-            >
-              {level}
-              <button
-                onClick={() =>
-                  setFilters((prev) => ({
-                    ...prev,
-                    experienceLevel: prev.experienceLevel.filter((e) => e !== level),
-                  }))
-                }
-              >
-                x
-              </button>
-            </span>
-          ))}
-        </div>
-      )}
-
-      {filters.sources.length > 0 && (
-        <div className="flex flex-wrap items-center gap-2 mb-2">
-          <span className="font-semibold text-sm text-gray-500">Source:</span>
-          {filters.sources.map((source) => (
-            <span
-              key={source}
-              className="tag transition-opacity duration-300 ease-in-out opacity-100"
-            >
-              {source}
-              <button
-                onClick={() =>
-                  setFilters((prev) => ({
-                    ...prev,
-                    sources: prev.sources.filter((s) => s !== source),
-                  }))
-                }
-              >
-                x
-              </button>
-            </span>
-          ))}
-        </div>
-      )}
-
-      {filters.tags.length > 0 && (
-        <div className="flex flex-wrap items-center gap-2 mb-2">
-          <span className="font-semibold text-sm text-gray-500">Tags:</span>
-          {filters.tags.map((tag) => (
-            <span key={tag} className="tag transition-opacity duration-300 ease-in-out opacity-100">
-              {tag}
-              <button
-                onClick={() =>
-                  setFilters((prev) => ({
-                    ...prev,
-                    tags: prev.tags.filter((t) => t !== tag),
-                  }))
-                }
-              >
-                x
-              </button>
-            </span>
-          ))}
-        </div>
-      )}
-
-      {filters.date && (
-        <div className="flex flex-wrap items-center gap-2 mb-2">
-          <span className="font-semibold text-sm text-gray-500">Date:</span>
-          <span className="tag transition-opacity duration-300 ease-in-out opacity-100">
-            {filters.date}
-            <button
-              onClick={() =>
-                setFilters((prev) => ({
-                  ...prev,
-                  date: '',
-                }))
-              }
-            >
-              x
-            </button>
-          </span>
-        </div>
-      )}
+      <ActiveFilters
+        searchQuery={searchQuery}
+        searchQueryInput={searchQueryInput}
+        filters={filters}
+        setSearchQuery={setSearchQuery}
+        setSearchQueryInput={setSearchQueryInput}
+        setFilters={setFilters}
+      />
 
       {/* Copy Link Button */}
       <div className="relative group inline-block">
