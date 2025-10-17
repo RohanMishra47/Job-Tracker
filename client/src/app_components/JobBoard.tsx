@@ -11,6 +11,7 @@ import { SalaryFilter } from './JobFilters/SalaryFilter';
 import { SearchBar } from './JobFilters/SearchBarFilter';
 import { TagsFilter } from './JobFilters/TagsFilter';
 import { FILTER_GROUPS } from './JobFilters/types';
+import PresetDropdown from './PresetDropdown';
 
 // Types
 type Job = {
@@ -36,7 +37,7 @@ type JobMap = {
   [status: string]: Job[];
 };
 
-type FilterPreset = {
+export type FilterPreset = {
   name: string;
   searchQuery: string;
   statuses: string[];
@@ -48,7 +49,7 @@ type FilterPreset = {
   date?: string;
   isFavorite?: boolean;
   salary?: { min: number | null; max: number | null };
-  sortBy: string;
+  sortBy: 'newest' | 'oldest';
   page: number;
   limit: number;
 };
@@ -178,11 +179,11 @@ const JobBoard: React.FC = () => {
   const [limit] = useState<number>(initialFilters.limit);
   const [totalJobs, setTotalJobs] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
-  // or make it user-configurable
   const [presets, setPresets] = useState<FilterPreset[]>(() => {
     const saved = localStorage.getItem('jobFilterPresets');
     return saved ? JSON.parse(saved) : [];
   });
+  const [selectedPreset, setSelectedPreset] = useState<FilterPreset | null>(null);
   const [copied, setCopied] = useState(false);
   const [filters, setFilters] = useState<FilterState>({
     priorities: initialFilters.priority,
@@ -374,6 +375,31 @@ const JobBoard: React.FC = () => {
   }, [presets]);
 
   useEffect(() => {
+    if (selectedPreset) {
+      setSearchQuery(selectedPreset.searchQuery);
+      setSearchQueryInput(selectedPreset.searchQuery);
+      setFilters({
+        priorities: selectedPreset.priorities,
+        jobTypes: selectedPreset.jobTypes,
+        statuses: selectedPreset.statuses,
+        experienceLevel: selectedPreset.experienceLevel,
+        sources: selectedPreset.sources,
+        tags: selectedPreset.tags,
+        date: selectedPreset.date || '',
+        isFavorite: selectedPreset.isFavorite || false,
+        salary: {
+          min: selectedPreset.salary?.min || null,
+          max: selectedPreset.salary?.max || null,
+        },
+      });
+      setCurrentPage(selectedPreset.page || 1);
+      if (['newest', 'oldest'].includes(selectedPreset.sortBy)) {
+        setSortBy(selectedPreset.sortBy);
+      }
+    }
+  }, [selectedPreset]);
+
+  useEffect(() => {
     debouncedUpdate(searchQueryInput);
 
     return () => {
@@ -490,71 +516,64 @@ const JobBoard: React.FC = () => {
       />
 
       {/* Copy Link Button */}
-      <div className="relative group inline-block">
+      <div className="relative group inline-block mr-2">
         <button
           onClick={handleCopy}
           disabled={isDefaultFilterState()}
-          className={`px-3 py-1 text-sm rounded transition ${
+          className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 shadow-sm ${
             isDefaultFilterState()
-              ? 'bg-gray-300 cursor-not-allowed'
-              : 'bg-blue-600 text-white hover:bg-blue-700'
+              ? 'bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200'
+              : 'bg-blue-600 text-white hover:bg-blue-700 hover:shadow-md active:scale-95'
           }`}
         >
-          {copied ? 'Link Copied!' : 'Copy Link'}
+          {copied ? (
+            <span className="flex items-center gap-1.5">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 13l4 4L19 7"
+                />
+              </svg>
+              Link Copied!
+            </span>
+          ) : (
+            'Copy Link'
+          )}
         </button>
         {isDefaultFilterState() && (
-          <span className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 bg-gray-800 text-white text-xs px-2 py-1 rounded whitespace-nowrap z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-500 pointer-events-none">
+          <span className="absolute left-1/2 -translate-x-1/2 bottom-full mb-3 bg-gray-900 text-white text-xs px-3 py-2 rounded-lg whitespace-nowrap z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none shadow-lg">
             Apply filters to enable sharing
+            <span className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></span>
           </span>
         )}
       </div>
 
-      {/* Preset Selection */}
-      <select
-        onChange={(e) => {
-          const selected = presets.find((p) => p.name === e.target.value);
-          if (selected) {
-            setSearchQuery(selected.searchQuery);
-            setSearchQueryInput(selected.searchQuery);
-            setFilters({
-              priorities: selected.priorities,
-              jobTypes: selected.jobTypes,
-              statuses: selected.statuses,
-              experienceLevel: selected.experienceLevel,
-              sources: selected.sources,
-              tags: selected.tags,
-              date: selected.date || '',
-              isFavorite: selected.isFavorite || false,
-              salary: { min: selected.salary?.min || null, max: selected.salary?.max || null },
-            });
-            setCurrentPage(selected.page || 1);
-            if (selected.sortBy === 'newest' || selected.sortBy === 'oldest') {
-              setSortBy(selected.sortBy);
-            }
-          }
-        }}
-      >
-        <option value="">Select Preset</option>
-        {presets.map((p) => (
-          <option key={p.name} value={p.name}>
-            {p.name}
-          </option>
-        ))}
-      </select>
-
-      <div className="flex gap-2">
+      {/* Preset Dropdown */}
+      <PresetDropdown
+        presets={presets}
+        selectedPreset={selectedPreset}
+        setSelectedPreset={setSelectedPreset}
+      />
+      {/* Sort Buttons */}
+      <div className="inline-flex gap-1 bg-gray-100 p-1 rounded-lg shadow-sm">
         <button
           onClick={() => setSortBy('newest')}
-          className={`px-3 py-1 rounded text-sm ${
-            sortBy === 'newest' ? 'bg-blue-600 text-white' : 'bg-gray-200'
+          className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
+            sortBy === 'newest'
+              ? 'bg-white text-blue-600 shadow-sm'
+              : 'text-gray-600 hover:text-gray-900'
           }`}
         >
           Newest
         </button>
         <button
           onClick={() => setSortBy('oldest')}
-          className={`px-3 py-1 rounded text-sm ${
-            sortBy === 'oldest' ? 'bg-blue-600 text-white' : 'bg-gray-200'
+          className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
+            sortBy === 'oldest'
+              ? 'bg-white text-blue-600 shadow-sm'
+              : 'text-gray-600 hover:text-gray-900'
           }`}
         >
           Oldest
@@ -564,13 +583,24 @@ const JobBoard: React.FC = () => {
       {/* Preset List */}
       <ul className="space-y-2">
         {presets.map((p) => (
-          <li key={p.name} className="flex items-center gap-2">
-            <span>{p.name}</span>
+          <li
+            key={p.name}
+            className="flex items-center justify-between gap-3 px-3 py-2 bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 transition-colors duration-150"
+          >
+            <span className="text-sm font-medium text-gray-700">{p.name}</span>
             <button
-              className="text-red-500 hover:text-red-700"
+              className="text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full p-1.5 transition-all duration-150"
               onClick={() => setPresets((prev) => prev.filter((preset) => preset.name !== p.name))}
+              aria-label={`Delete ${p.name} preset`}
             >
-              x
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
             </button>
           </li>
         ))}
@@ -580,7 +610,10 @@ const JobBoard: React.FC = () => {
       <button
         onClick={() => {
           const name = prompt('Name this preset');
-          if (!name) return;
+          if (!name || name.length > 10) {
+            alert('Please enter a name under 50 characters.');
+            return;
+          }
 
           const newPreset: FilterPreset = {
             name,
@@ -601,14 +634,34 @@ const JobBoard: React.FC = () => {
 
           setPresets((prev) => [...prev, newPreset]);
         }}
+        className="px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg transition-all duration-200 shadow-sm hover:shadow active:scale-95"
       >
         Save Current Filters
       </button>
 
       {/* No Results Message */}
       {Object.keys(filteredJobsByStatus).length === 0 && (
-        <div className="text-center text-gray-500 mt-4">
-          No jobs match your filters. Try adjusting your search or clearing filters.
+        <div className="flex flex-col items-center justify-center py-12 px-4">
+          <div className="bg-gray-50 rounded-full p-4 mb-4">
+            <svg
+              className="w-12 h-12 text-gray-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          </div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-1">No jobs found</h3>
+          <p className="text-sm text-gray-500 text-center max-w-md">
+            No jobs match your current filters. Try adjusting your search criteria or clearing some
+            filters.
+          </p>
         </div>
       )}
 
