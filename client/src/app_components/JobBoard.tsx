@@ -673,20 +673,80 @@ const JobBoard: React.FC = () => {
           ))}
         </div>
       </DragDropContext>
-      <div className="flex gap-2 mt-4">
-        <button disabled={currentPage === 1} onClick={() => setCurrentPage((prev) => prev - 1)}>
-          Previous
-        </button>
-        <span>
-          Page {currentPage} of {totalPages}
-        </span>
-        <button
-          disabled={currentPage === totalPages}
-          onClick={() => setCurrentPage((prev) => prev + 1)}
-        >
-          Next
-        </button>
-        <span>Jobs {totalJobs}</span>
+      <div className="flex items-center justify-between mt-6 px-4 py-3 bg-white border border-gray-200 rounded-lg shadow-sm">
+        {/* Left side - Navigation */}
+        <div className="flex items-center gap-2">
+          <button
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage((prev) => prev - 1)}
+            className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+              currentPage === 1
+                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 hover:border-gray-400 active:scale-95'
+            }`}
+          >
+            <span className="flex items-center gap-1.5">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 19l-7-7 7-7"
+                />
+              </svg>
+              Previous
+            </span>
+          </button>
+
+          <button
+            disabled={currentPage === totalPages}
+            onClick={() => setCurrentPage((prev) => prev + 1)}
+            className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+              currentPage === totalPages
+                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 hover:border-gray-400 active:scale-95'
+            }`}
+          >
+            <span className="flex items-center gap-1.5">
+              Next
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 5l7 7-7 7"
+                />
+              </svg>
+            </span>
+          </button>
+        </div>
+
+        {/* Center - Page Info */}
+        <div className="flex items-center gap-2 px-4 py-2 bg-gray-50 rounded-lg border border-gray-200">
+          <span className="text-sm text-gray-500 font-medium">Page</span>
+          <span className="text-sm font-bold text-gray-900">{currentPage}</span>
+          <span className="text-sm text-gray-400">of</span>
+          <span className="text-sm font-semibold text-gray-700">{totalPages}</span>
+        </div>
+
+        {/* Right side - Total Jobs */}
+        <div className="flex items-center gap-2 px-3 py-2 bg-blue-50 rounded-lg border border-blue-200">
+          <svg
+            className="w-4 h-4 text-blue-600"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+            />
+          </svg>
+          <span className="text-sm font-semibold text-blue-700">{totalJobs}</span>
+          <span className="text-sm text-blue-600">jobs</span>
+        </div>
       </div>
     </div>
   );
