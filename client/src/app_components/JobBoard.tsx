@@ -261,11 +261,9 @@ const JobBoard: React.FC = () => {
       const [moved] = sourceJobs.splice(source.index, 1);
       destJobs.splice(destination.index, 0, moved);
 
-      setJobs({
-        ...jobs,
-        [sourceColumn]: sourceJobs,
-        [destColumn]: destJobs,
-      });
+      setAllJobs((prevAllJobs) =>
+        prevAllJobs.map((job) => (job._id === moved._id ? { ...job, status: destColumn } : job))
+      );
       updateJobStatus(moved._id, destColumn);
     }
   };
@@ -667,12 +665,14 @@ const JobBoard: React.FC = () => {
 
       {/* Job Columns */}
       <DragDropContext onDragEnd={handleDragEnd}>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
           {Object.entries(filteredJobsByStatus).map(([status, jobs]) => (
             <JobColumn key={status} title={status} jobs={jobs} />
           ))}
         </div>
       </DragDropContext>
+
+      {/* Pagination Controls */}
       <div className="flex items-center justify-between mt-6 px-4 py-3 bg-white border border-gray-200 rounded-lg shadow-sm">
         {/* Left side - Navigation */}
         <div className="flex items-center gap-2">
