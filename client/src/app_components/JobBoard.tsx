@@ -1,3 +1,4 @@
+import { useFitScoreStore } from '@/store/useFitScoreStore';
 import { DragDropContext, type DropResult } from '@hello-pangea/dnd';
 import { AxiosError } from 'axios';
 import { debounce } from 'lodash';
@@ -12,6 +13,7 @@ import { SearchBar } from './JobFilters/SearchBarFilter';
 import { TagsFilter } from './JobFilters/TagsFilter';
 import { FILTER_GROUPS } from './JobFilters/types';
 import PresetDropdown from './PresetDropdown';
+import ResumeUploader from './ResumeUploader';
 
 // Types
 type Job = {
@@ -64,6 +66,16 @@ export type FilterState = {
   date: string | '';
   isFavorite: boolean;
   salary: { min: number | null; max: number | null };
+};
+
+export type FitScoreResult = {
+  score: number;
+  breakdown: {
+    skillsMatch: number;
+    experienceMatch: number;
+    keywordOverlap: number;
+  };
+  suggestions: string[];
 };
 
 const allStatuses =
@@ -196,6 +208,53 @@ const JobBoard: React.FC = () => {
     isFavorite: initialFilters.isFavorite || false,
     salary: { min: initialFilters.salary.min || null, max: initialFilters.salary.max || null },
   });
+  const setResumeText = useFitScoreStore((s) => s.setResumeText);
+  const setFitScores = useFitScoreStore((s) => s.setFitScores);
+
+  // resume upload handler
+  const handleResumeUploaded = async (text: string) => {
+    setResumeText(text);
+    const skippedJobs = allJobs
+      .filter((job) => !job.description || job.description.trim().length === 0)
+      .map((job) => ({
+        id: job._id,
+        company: job.company || 'Untitled Company',
+      }));
+
+    const validJobs = allJobs.filter((job) => job.description && job.description.trim().length > 0);
+
+    // Log summary
+    console.log(
+      `📊 Processing ${validJobs.length} of ${allJobs.length} jobs (${skippedJobs.length} skipped)`
+    );
+
+    // Log skipped jobs if any
+    if (skippedJobs.length > 0) {
+      console.log('⚠️ Jobs with missing descriptions:');
+      skippedJobs.forEach((job) => {
+        console.log(`  - ID: ${job.id}, Company: "${job.company}"`);
+      });
+    }
+    const scores: Record<string, FitScoreResult> = {};
+
+    for (const job of validJobs) {
+      console.log('📤 Sending to /fit-score:', {
+        resumeTextLength: text.length,
+        jobId: job._id,
+        jobTitle: job.position, // for debugging
+      });
+
+      const res = await api.post('/fit-score', {
+        resumeText: text,
+        jobId: job._id,
+      });
+      scores[job._id] = res.data;
+    }
+    console.log('🎯 Fit scores to save:', scores);
+    console.log('🔑 Job IDs:', Object.keys(scores));
+    setFitScores(scores);
+    console.log('✅ Scores after saving:', useFitScoreStore.getState().fitScores);
+  };
 
   // Memoized values
   const debouncedUpdate = useMemo(
@@ -485,6 +544,8 @@ const JobBoard: React.FC = () => {
   // Render
   return (
     <div>
+      {/* Resume Uploader */}
+      <ResumeUploader onResumeUploaded={handleResumeUploaded} />
       {/* Search Input */}
       <SearchBar value={searchQueryInput} onChange={setSearchQueryInput} />
       {/* Array Filters Component */}

@@ -1,3 +1,4 @@
+import { useFitScoreStore } from '@/store/useFitScoreStore';
 import { Draggable } from '@hello-pangea/dnd';
 import clsx from 'clsx';
 import React from 'react';
@@ -27,8 +28,9 @@ type Props = {
 };
 
 const JobCard: React.FC<Props> = ({ job, index }) => {
+  const fitScore = useFitScoreStore((s) => s.getFitScore(job._id));
   return (
-    <Link to={`/jobs/${job._id}`}>
+    <Link to={`/fit-score/${job._id}`}>
       <Draggable draggableId={job._id} index={index}>
         {(provided, snapshot) => (
           <div
@@ -124,6 +126,20 @@ const JobCard: React.FC<Props> = ({ job, index }) => {
                 <p className="text-gray-600">{job.location}</p>
               </div>
             </div>
+
+            {fitScore && (
+              <span
+                className={`px-2 py-1 rounded text-white text-sm font-semibold ${
+                  fitScore.score >= 80
+                    ? 'bg-green-500'
+                    : fitScore.score >= 60
+                      ? 'bg-yellow-500'
+                      : 'bg-red-500'
+                }`}
+              >
+                Fit Score: {fitScore.score}
+              </span>
+            )}
 
             {/* Dragging Indicator */}
             {snapshot.isDragging && (

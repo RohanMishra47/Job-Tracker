@@ -5,6 +5,7 @@ import { restoreTokenFromStorage, setAccessToken } from './instances/axiosInstan
 import CreateJob from './pages/createJob';
 import EditJob from './pages/editJob';
 import JobDetail from './pages/JobDetail';
+import JobFitScoreBreakdown from './pages/JobFitScoreBreakdown';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import { isLoggedIn } from './utils/auth';
@@ -40,6 +41,7 @@ function App() {
         <Route path="/createJob" element={<CreateJob />} />
         <Route path="/editJob" element={<EditJob />} />
         <Route path="/jobs/:id" element={<JobDetail />} />
+        <Route path="/fit-score/:jobId" element={<JobFitScoreBreakdown />} />
       </Routes>
     </BrowserRouter>
   );

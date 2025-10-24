@@ -8,7 +8,9 @@ dotenv.config();
 
 import { Job } from "./models/Job";
 import authRoutes from "./routes/authRoutes";
+import fitScoreRoutes from "./routes/fitScoreRoutes";
 import jobRoutes from "./routes/jobRoutes";
+import resumeRoutes from "./routes/resumeRoutes";
 
 const app: Application = express();
 
@@ -45,6 +47,8 @@ app.use(express.json());
 
 app.use("/api/auth", authRoutes);
 app.use("/api/jobs", jobRoutes);
+app.use("/api/resume", resumeRoutes);
+app.use("/api/fit-score", fitScoreRoutes);
 
 // Add this temporarily to your server.ts
 app.post("/api/auth/refresh", (req, res) => {
