@@ -27,7 +27,6 @@
     "mammoth": "^1.11.0",
     "mongoose": "^8.16.5",
     "multer": "^2.0.2",
-    "openai": "^6.6.0",
     "pdf.js-extract": "^0.2.1",
     "stopwords-en": "^0.3.0"
   },
