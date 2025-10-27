@@ -10,6 +10,7 @@ Built with a focus on clarity, scalability, and developer experience.
 - **Database:** MongoDB
 - **Containerization:** Docker
 - **Language:** TypeScript
+- **AI Integration:** Hugging Face API (Embeddings & Model Inference)
 
 🔗 **Live Link:** [View Project Here](https://job-tracker-2ub.pages.dev/register)
 
@@ -22,6 +23,7 @@ Built with a focus on clarity, scalability, and developer experience.
 - **Kanban Dashboard** — Intuitive drag-and-drop interface for managing job stages.
 - **Filtering, Sorting & Pagination** — Server-side operations for performance and scalability.
 - **Deep Linking** — Syncs filter and sort state with URLs for reproducible views.
+- 🤖 **AI Job Fit Score** — Uses AI to analyze job descriptions and resumes to suggest the best matches.
 - **Error Handling & Validation** — Consistent and informative feedback across UI and backend.
 - **Responsive Design** — Optimized for desktop, tablet, and mobile devices.
 
@@ -35,7 +37,6 @@ Built with a focus on clarity, scalability, and developer experience.
 ## 🧠 Future Enhancements
 
 - 🔑 **Google Sign-In** (OAuth 2.0) integration.
-- 🤖 **AI Job Fit Score** — Uses AI to analyze job descriptions and resumes to suggest the best matches.
 - 📊 **Analytics Dashboard** — Visual insights into job progress, response rates, and timelines.
 - 💅 **UI/UX Polish** — Improved Kanban visuals and user flow refinements.
 
