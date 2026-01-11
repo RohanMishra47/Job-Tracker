@@ -10,6 +10,15 @@ const Register = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
+  const handleDemoLogin = () => {
+    navigate('/login', {
+      state: {
+        email: 'rohan@example.com',
+        password: 'yourPassword123',
+      },
+    });
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
@@ -141,6 +150,13 @@ const Register = () => {
           <div className="mt-6 pt-6 border-t border-slate-200 text-center">
             <p className="text-slate-600 text-sm">
               Already have an account?{' '}
+              <button
+                onClick={handleDemoLogin}
+                className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium py-3 px-4 my-1.5 rounded-lg transition flex items-center justify-center gap-2"
+              >
+                Try Demo Account
+              </button>
+              <p className="text-center text-gray-500 text-sm mb-4">OR</p>
               <Link
                 to="/login"
                 className="text-blue-600 hover:text-blue-700 font-medium transition"

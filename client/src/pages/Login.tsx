@@ -1,8 +1,9 @@
 import { signInSchema, type SignInFormData } from '@/schemas/authSchema';
 import axios from 'axios';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { api, setAccessToken } from '../instances/axiosInstance';
 
 const Login = () => {
@@ -11,6 +12,38 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.state?.email && location.state?.password) {
+      // Creating a dummy promise that resolves after a short delay
+      const loadDemo = new Promise((resolve) => {
+        setTimeout(() => {
+          setForm({
+            email: location.state.email,
+            password: location.state.password,
+          });
+          resolve(true);
+        }, 1000);
+      });
+
+      // Using toast.promise to show loading, success, and error states
+      toast.promise(loadDemo, {
+        loading: 'Preparing demo account...',
+        success: 'Demo credentials pre-filled!',
+        error: 'Failed to load demo credentials',
+      });
+    }
+  }, [location.state]);
+
+  const handleFillDemo = () => {
+    setForm({
+      email: 'rohan@example.com',
+      password: 'yourPassword123',
+    });
+
+    toast.success('Demo credentials applied!');
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -125,6 +158,12 @@ const Login = () => {
           <div className="mt-6 pt-6 border-t border-slate-200 text-center">
             <p className="text-slate-600 text-sm">
               Don't have an account?{' '}
+              <button
+                onClick={handleFillDemo}
+                className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium py-3 px-4 my-1.5 rounded-lg transition flex items-center justify-center gap-2"
+              >
+                Quick Fill: Demo Account
+              </button>
               <Link
                 to="/register"
                 className="text-blue-600 hover:text-blue-700 font-medium transition"
